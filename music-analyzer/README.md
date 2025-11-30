@@ -21,7 +21,7 @@ Matplotlib: Visualización de datos
 
 1. Clonar el repositorio
 
-git clone https://github.com/tu-usuario/music-analyzer.git
+gh repo clone IdkHexa/Analizador-de-canciones-DSP
 cd music-analyzer
 
 2. Crear entorno virtual (recomendado)
@@ -177,4 +177,5 @@ Referencias
 https://librosa.org/doc/latest/index.html
 https://doc.qt.io/qtforpython-6/
 https://rnhart.net/articles/key-finding/
+
 https://www.dspguide.com/
