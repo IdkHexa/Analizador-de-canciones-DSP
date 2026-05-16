@@ -39,7 +39,7 @@ class FeatureExtractor:
         Returns:
             A string like ``"C Mayor"`` or ``"A Menor"``.
         """
-        chroma_mean = chroma_mean / np.sum(chroma_mean)   # normalise
+        chroma_mean = chroma_mean / np.sum(chroma_mean)  # normalise
 
         best_match: float = -1.0
         best_key: str = "Desconocida"

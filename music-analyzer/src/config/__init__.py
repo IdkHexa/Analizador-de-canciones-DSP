@@ -23,9 +23,7 @@ K_MINOR: Final[np.ndarray] = np.array(
 )
 """Krumhansl-Schmuckler minor key profile (12 chroma bins)."""
 
-CHROMA_NAMES: Final[list[str]] = [
-    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
-]
+CHROMA_NAMES: Final[list[str]] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 """Names of the 12 pitch classes in order, starting from C."""
 
 # ---------------------------------------------------------------------------

@@ -25,8 +25,8 @@ class AudioFile:
 
     def __init__(self) -> None:
         self._path: str | None = None
-        self._y: np.ndarray | None = None      # Audio signal (protected)
-        self._sr: int | None = None             # Sample rate (protected)
+        self._y: np.ndarray | None = None  # Audio signal (protected)
+        self._sr: int | None = None  # Sample rate (protected)
         self._features_cache: dict[str, Any] = {}
 
     def load_audio(self, path: str) -> bool:

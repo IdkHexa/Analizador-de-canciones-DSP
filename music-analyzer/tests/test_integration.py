@@ -23,13 +23,10 @@ class TestEndToEnd:
     def test_sine_wav_exists(self) -> None:
         """The synthetic fixture file must be present."""
         assert SINE_WAV.exists(), (
-            f"Fixture not found at {SINE_WAV}. "
-            "Run `python tests/fixtures/generate_wav.py` first."
+            f"Fixture not found at {SINE_WAV}. Run `python tests/fixtures/generate_wav.py` first."
         )
 
-    def test_full_pipeline_on_sine_wav(
-        self, extractor: FeatureExtractor
-    ) -> None:
+    def test_full_pipeline_on_sine_wav(self, extractor: FeatureExtractor) -> None:
         """Load a real WAV file and verify the DSP output.
 
         The 440 Hz sine produces a detectable tempo and a key
@@ -40,13 +37,9 @@ class TestEndToEnd:
 
         features = extractor.extract_all_features(audio)
 
-        assert "error" not in features, (
-            f"Pipeline returned error: {features.get('error')}"
-        )
+        assert "error" not in features, f"Pipeline returned error: {features.get('error')}"
         assert isinstance(features["tempo"], float)
-        assert features["tempo"] > 0, (
-            f"Expected positive tempo, got {features['tempo']}"
-        )
+        assert features["tempo"] > 0, f"Expected positive tempo, got {features['tempo']}"
         assert isinstance(features["key"], str)
         assert "Desconocida" not in features["key"]
         # Chromagram should have the expected shape
@@ -55,9 +48,7 @@ class TestEndToEnd:
         # Spectrogram should be 2D
         assert features["D"].ndim == 2
 
-    def test_pipeline_rejects_unloaded_audio(
-        self, extractor: FeatureExtractor
-    ) -> None:
+    def test_pipeline_rejects_unloaded_audio(self, extractor: FeatureExtractor) -> None:
         """Calling extract without loading should return an error."""
         audio = AudioFile()
         result = extractor.extract_all_features(audio)

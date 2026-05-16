@@ -57,9 +57,7 @@ class BaseVisualizer(QWidget):
         Raises:
             NotImplementedError: Subclasses must implement this method.
         """
-        raise NotImplementedError(
-            "draw_data() debe ser implementado por la subclase."
-        )
+        raise NotImplementedError("draw_data() debe ser implementado por la subclase.")
 
 
 class SpectrogramVisualizer(BaseVisualizer):
@@ -115,7 +113,18 @@ class KeyVisualizer(BaseVisualizer):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(title="Cromagrama Normalizado (Tonalidad)", **kwargs)
         self.chromas: list[str] = [
-            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+            "C",
+            "C#",
+            "D",
+            "D#",
+            "E",
+            "F",
+            "F#",
+            "G",
+            "G#",
+            "A",
+            "A#",
+            "B",
         ]
 
     def draw_data(self, features: dict[str, Any]) -> None:

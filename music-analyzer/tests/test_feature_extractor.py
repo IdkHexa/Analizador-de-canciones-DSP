@@ -69,8 +69,8 @@ class TestExtractAllFeatures:
         from model.audio_file import AudioFile
 
         audio = AudioFile()
-        audio._y = sine_wav          # noqa: SLF001 — inject signal directly
-        audio._sr = 22050            # noqa: SLF001
+        audio._y = sine_wav  # noqa: SLF001 — inject signal directly
+        audio._sr = 22050  # noqa: SLF001
         audio._path = "test.wav"
 
         result = extractor.extract_all_features(audio)

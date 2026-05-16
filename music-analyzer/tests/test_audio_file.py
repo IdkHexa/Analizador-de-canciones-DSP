@@ -13,9 +13,7 @@ class TestLoadAudio:
     """Tests for ``AudioFile.load_audio`` with mocked ``librosa.load``."""
 
     @patch("src.model.audio_file.librosa.load")
-    def test_successful_load_returns_true(
-        self, mock_load: MagicMock
-    ) -> None:
+    def test_successful_load_returns_true(self, mock_load: MagicMock) -> None:
         """When librosa.load succeeds, ``load_audio`` returns ``True``."""
         mock_load.return_value = (np.array([0.1] * 1000, dtype=np.float32), 22050)
 
@@ -28,9 +26,7 @@ class TestLoadAudio:
         assert audio.get_path() == "test.wav"
 
     @patch("src.model.audio_file.librosa.load")
-    def test_failed_load_returns_false(
-        self, mock_load: MagicMock
-    ) -> None:
+    def test_failed_load_returns_false(self, mock_load: MagicMock) -> None:
         """When librosa.load raises, ``load_audio`` returns ``False``."""
         mock_load.side_effect = FileNotFoundError("File not found")
 
@@ -42,9 +38,7 @@ class TestLoadAudio:
         assert audio.get_sample_rate() is None
 
     @patch("src.model.audio_file.librosa.load")
-    def test_caches_are_cleared_on_reload(
-        self, mock_load: MagicMock
-    ) -> None:
+    def test_caches_are_cleared_on_reload(self, mock_load: MagicMock) -> None:
         """Loading a second file clears the previous features cache."""
         mock_load.return_value = (np.zeros(1000, dtype=np.float32), 22050)
 

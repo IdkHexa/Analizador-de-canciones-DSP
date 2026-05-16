@@ -65,7 +65,7 @@ class AggregatePlaylistResult(AnalysisResultBase):
             ``Std Dev BPM`` (or ``N/A`` when no data is available).
         """
         tempos = [
-            d._raw_data.get("tempo")     # noqa: SLF001 — intentional for educational example
+            d._raw_data.get("tempo")  # noqa: SLF001 — intentional for educational example
             for d in self._raw_data
             if d._raw_data.get("tempo") is not None
         ]
