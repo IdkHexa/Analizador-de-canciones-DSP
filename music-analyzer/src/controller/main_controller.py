@@ -51,6 +51,9 @@ class WorkerObject(QObject):
         self._audio = model_audio
         self._extractor = model_extractor
         self._filepath = filepath
+        # Batch context — set externally before starting the thread
+        self._batch_current: int = 1
+        self._batch_total: int = 1
 
     @Slot()
     def run(self) -> None:
@@ -83,10 +86,10 @@ class WorkerObject(QObject):
 
 
 class MainController(QObject):
-    """Orchestrates Model ↔ View communication.
+    """Orchestrates Model <-> View communication.
 
     Responsible for
-    - Handling UI requests (file dialog → analysis).
+    - Handling UI requests (file dialog -> analysis).
     - Running DSP on a background thread via :class:`WorkerObject`.
     - Maintaining an analysis history (:class:`PlaylistAnalyzer`).
     - Pushing results back to the View thread-safely via Qt signals.
@@ -117,6 +120,9 @@ class MainController(QObject):
         self._history_features: list[dict[str, Any]] = []
         # Scalar-only list of previous sessions (persisted)
         self._persisted_history: list[dict[str, Any]] = []
+        # Batch processing state
+        self._batch_files: list[str] = []
+        self._batch_index: int = 0
 
         self._connect_signals_to_slots()
 
@@ -126,12 +132,12 @@ class MainController(QObject):
 
     def _connect_signals_to_slots(self) -> None:
         """Wire internal and view signals to the appropriate slots."""
-        # View → Controller
+        # View -> Controller
         self.view_window.signal_analyze_request.connect(self.handle_analyze_request)
         self.view_window.signal_history_item_selected.connect(self._restore_from_history)
         self.view_window.signal_export_request.connect(self._handle_export_request)
 
-        # Controller → View
+        # Controller -> View
         self.signal_status_update.connect(self.view_window.update_status)
         self.signal_summary_update.connect(self.view_window.display_summary)
         self.signal_graph_update.connect(self.view_window.display_analysis)
@@ -144,41 +150,74 @@ class MainController(QObject):
         self._load_persisted_history()
 
     # ------------------------------------------------------------------
-    # Entry point: user wants to analyse a file
+    # Entry point: user wants to analyse files
     # ------------------------------------------------------------------
 
     @Slot(str)
     def handle_analyze_request(self, _dummy: str = "") -> None:
         """Open a file dialog and start background analysis.
 
-        The actual file dialog lives in the Controller (not the View)
-        to keep the View free of I/O logic.
+        Supports multiple file selection for batch processing.
+        Files are analysed sequentially.
         """
-        filepath, _ = QFileDialog.getOpenFileName(
+        filepaths, _ = QFileDialog.getOpenFileNames(
             QWidget(self.view_window),
-            "Seleccionar Archivo de Audio",
+            "Seleccionar Archivos de Audio",
             "",
             AUDIO_FILE_PATTERNS,
         )
-        if not filepath:
-            self.signal_status_update.emit("Selección cancelada.", "orange")
+        if not filepaths:
+            self.signal_status_update.emit("Seleccion cancelada.", "orange")
             return
 
-        self.signal_filepath_update.emit(filepath)
-        self.signal_status_update.emit("Cargando y analizando...", "blue")
+        if len(filepaths) == 1:
+            # Single file — normal path
+            fp = filepaths[0]
+            self.signal_filepath_update.emit(fp)
+            self.signal_status_update.emit("Cargando y analizando...", "blue")
+            self._start_worker(fp)
+        else:
+            # Multiple files — batch path
+            self._batch_files = filepaths
+            self._batch_index = 0
+            self._start_next_batch()
 
-        self._start_worker(filepath)
+    def _start_next_batch(self) -> None:
+        """Start the next file in the batch queue."""
+        if self._batch_index >= len(self._batch_files):
+            self.signal_status_update.emit(
+                f"Batch completo: {len(self._batch_files)} archivos analizados.",
+                "green",
+            )
+            return
+
+        fp = self._batch_files[self._batch_index]
+        total = len(self._batch_files)
+        current = self._batch_index + 1
+
+        self.signal_filepath_update.emit(fp)
+        self.signal_status_update.emit(f"Analizando archivo {current}/{total}...", "blue")
+        self._start_worker(fp, batch_current=current, batch_total=total)
 
     # ------------------------------------------------------------------
     # QThread worker management
     # ------------------------------------------------------------------
 
-    def _start_worker(self, filepath: str) -> None:
+    def _start_worker(
+        self,
+        filepath: str,
+        batch_current: int = 1,
+        batch_total: int = 1,
+    ) -> None:
         """Create a :class:`WorkerObject`, move it to a :class:`QThread`,
         and start processing."""
         self._thread = QThread(self)
         self._worker = WorkerObject(self.model_audio, self.model_extractor, filepath)
         self._worker.moveToThread(self._thread)
+
+        # Capture batch context for the finished callback
+        self._worker._batch_current = batch_current
+        self._worker._batch_total = batch_total
 
         # Wire worker signals
         self._worker.progress.connect(self.signal_progress.emit)
@@ -201,7 +240,7 @@ class MainController(QObject):
 
         self.signal_summary_update.emit(result_obj.get_summary())
         self.signal_graph_update.emit(features)
-        self.signal_status_update.emit("Análisis completado exitosamente.", "green")
+        self.signal_status_update.emit("Analisis completado exitosamente.", "green")
 
         # Persist scalar data to disk
         save_entry(features)
@@ -209,6 +248,11 @@ class MainController(QObject):
         # Notify the View to refresh the history list
         history_names = self._build_history_names()
         self.signal_history_update.emit(history_names)
+
+        # Continue batch if there are more files
+        if self._batch_index < len(self._batch_files):
+            self._batch_index += 1
+            self._start_next_batch()
 
     def _build_history_names(self) -> list[str]:
         """Build a combined list of persisted and session history names."""

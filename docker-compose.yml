@@ -1,0 +1,9 @@
+services:
+  music-analyzer:
+    build: .
+    volumes:
+      - ./music:/music:ro
+    environment:
+      - DISPLAY=${DISPLAY:-}
+      - QT_QPA_PLATFORM=xcb
+    network_mode: host
