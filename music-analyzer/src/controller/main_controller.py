@@ -6,7 +6,9 @@ user gestures from the View to Model operations and pushes results back.
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 from typing import Any
 
 from PySide6.QtCore import QObject, QThread, Signal, Slot
@@ -16,6 +18,7 @@ from config import AUDIO_FILE_PATTERNS
 from model.audio_file import AudioFile
 from model.feature_extractor import FeatureExtractor
 from model.playlist_analyzer import PlaylistAnalyzer, SingleTrackResult
+from persist import load_history, save_entry
 from view.main_window import MainWindow
 
 logger = logging.getLogger(__name__)
@@ -112,6 +115,8 @@ class MainController(QObject):
 
         # Keep track of each result's features keyed by list index
         self._history_features: list[dict[str, Any]] = []
+        # Scalar-only list of previous sessions (persisted)
+        self._persisted_history: list[dict[str, Any]] = []
 
         self._connect_signals_to_slots()
 
@@ -124,6 +129,7 @@ class MainController(QObject):
         # View → Controller
         self.view_window.signal_analyze_request.connect(self.handle_analyze_request)
         self.view_window.signal_history_item_selected.connect(self._restore_from_history)
+        self.view_window.signal_export_request.connect(self._handle_export_request)
 
         # Controller → View
         self.signal_status_update.connect(self.view_window.update_status)
@@ -133,6 +139,9 @@ class MainController(QObject):
         self.signal_progress.connect(self.view_window.update_progress)
         self.signal_history_update.connect(self.view_window.update_history_list)
         self.signal_history_restore.connect(self.view_window.highlight_history_item)
+
+        # Load persisted history from previous sessions
+        self._load_persisted_history()
 
     # ------------------------------------------------------------------
     # Entry point: user wants to analyse a file
@@ -194,12 +203,22 @@ class MainController(QObject):
         self.signal_graph_update.emit(features)
         self.signal_status_update.emit("Análisis completado exitosamente.", "green")
 
+        # Persist scalar data to disk
+        save_entry(features)
+
         # Notify the View to refresh the history list
-        history_names = [
-            str(r.get_summary().get("File", f"Track {i}"))
-            for i, r in enumerate(self.model_playlist._results)  # noqa: SLF001
-        ]
+        history_names = self._build_history_names()
         self.signal_history_update.emit(history_names)
+
+    def _build_history_names(self) -> list[str]:
+        """Build a combined list of persisted and session history names."""
+        names: list[str] = []
+        for entry in self._persisted_history:
+            fname = str(entry.get("file", "N/A")).split("/")[-1]
+            names.append(f"{fname} (prev)")
+        for i, r in enumerate(self.model_playlist._results):  # noqa: SLF001
+            names.append(str(r.get_summary().get("File", f"Track {i}")))
+        return names
 
     def _on_analysis_error(self, message: str) -> None:
         """Handle an error from the worker thread.
@@ -234,3 +253,57 @@ class MainController(QObject):
             "blue",
         )
         self.signal_history_restore.emit(index)
+
+    # ------------------------------------------------------------------
+    # Persisted history
+    # ------------------------------------------------------------------
+
+    def _load_persisted_history(self) -> None:
+        """Load history from disk and populate the view."""
+        self._persisted_history = load_history()
+        if self._persisted_history:
+            names = self._build_history_names()
+            self.signal_history_update.emit(names)
+            logger.info("Loaded %d persisted entries", len(self._persisted_history))
+
+    # ------------------------------------------------------------------
+    # Export
+    # ------------------------------------------------------------------
+
+    @Slot(str)
+    def _handle_export_request(self, _dummy: str = "") -> None:
+        """Open a save dialog and export the current analysis as JSON."""
+        features = self.view_window._last_features  # noqa: SLF001
+        if not features:
+            return
+
+        filepath, _ = QFileDialog.getSaveFileName(
+            self.view_window,
+            "Exportar Resultados",
+            "",
+            "JSON (*.json);;CSV (*.csv)",
+        )
+        if not filepath:
+            return
+
+        export = {
+            "file": str(features.get("path", "")),
+            "bpm": features.get("tempo", 0),
+            "key": features.get("key", ""),
+        }
+
+        if filepath.endswith(".csv"):
+            import csv  # noqa: PLC0415 — import on demand
+
+            with open(filepath, "w", newline="", encoding="utf-8") as f:
+                w = csv.DictWriter(f, fieldnames=list(export))
+                w.writeheader()
+                w.writerow(export)
+        else:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(export, f, indent=2, ensure_ascii=False)
+
+        logger.info("Exported results to %s", filepath)
+        self.signal_status_update.emit(
+            f"Resultados exportados a {os.path.basename(filepath)}", "green"
+        )

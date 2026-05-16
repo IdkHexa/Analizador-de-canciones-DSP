@@ -53,6 +53,7 @@ def valid_features() -> dict[str, Any]:
         "key": "C Mayor",
         "D": np.random.rand(128, 100),
         "chroma": np.random.rand(12, 100),
+        "y": np.zeros(22050, dtype=np.float32),
         "sr": 22050,
         "times": np.linspace(0, 5, 100),
     }
