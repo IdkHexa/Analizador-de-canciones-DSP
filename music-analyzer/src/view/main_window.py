@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from src.config import (
+from config import (
     CONTROL_PANEL_WIDTH,
     STYLE_FILEPATH_LABEL,
     STYLE_STATUS_ERROR,

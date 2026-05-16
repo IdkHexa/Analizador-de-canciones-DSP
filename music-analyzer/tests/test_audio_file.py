@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from src.model.audio_file import AudioFile
+from model.audio_file import AudioFile
 
 
 class TestLoadAudio:

@@ -12,10 +12,10 @@ from typing import Any
 from PySide6.QtCore import QObject, QThread, Signal, Slot
 from PySide6.QtWidgets import QFileDialog
 
-from src.config import AUDIO_FILE_PATTERNS
-from src.model.audio_file import AudioFile
-from src.model.feature_extractor import FeatureExtractor
-from src.model.playlist_analyzer import PlaylistAnalyzer, SingleTrackResult
+from config import AUDIO_FILE_PATTERNS
+from model.audio_file import AudioFile
+from model.feature_extractor import FeatureExtractor
+from model.playlist_analyzer import PlaylistAnalyzer, SingleTrackResult
 
 logger = logging.getLogger(__name__)
 

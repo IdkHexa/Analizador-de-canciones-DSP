@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.model.playlist_analyzer import (
+from model.playlist_analyzer import (
     AggregatePlaylistResult,
     AnalysisResultBase,
     SingleTrackResult,
@@ -80,6 +80,6 @@ class TestAggregatePlaylistResult:
         summary = result.get_summary()
         assert summary["Total Tracks"] == 3
         assert float(summary["Average BPM"]) == pytest.approx(120.0)
-        assert float(summary["Std Dev BPM"]) == pytest.approx(
-            float(np.std([100.0, 120.0, 140.0]))
-        )
+        # Std Dev is formatted to 2 decimal places
+        std_raw = np.std([100.0, 120.0, 140.0])
+        assert summary["Std Dev BPM"] == f"{std_raw:.2f}"

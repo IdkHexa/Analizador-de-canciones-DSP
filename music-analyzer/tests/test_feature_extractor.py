@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.model.feature_extractor import FeatureExtractor
+from model.feature_extractor import FeatureExtractor
 
 
 class TestDetermineKey:
@@ -56,7 +56,7 @@ class TestExtractAllFeatures:
 
     def test_returns_error_when_no_audio(self, extractor: FeatureExtractor) -> None:
         """Calling without a loaded file should return an error dict."""
-        from src.model.audio_file import AudioFile
+        from model.audio_file import AudioFile
 
         audio = AudioFile()
         result = extractor.extract_all_features(audio)
@@ -66,7 +66,7 @@ class TestExtractAllFeatures:
         self, extractor: FeatureExtractor, sine_wav: np.ndarray
     ) -> None:
         """A real sine wave should produce tempo > 0 and a valid key string."""
-        from src.model.audio_file import AudioFile
+        from model.audio_file import AudioFile
 
         audio = AudioFile()
         audio._y = sine_wav          # noqa: SLF001 — inject signal directly
