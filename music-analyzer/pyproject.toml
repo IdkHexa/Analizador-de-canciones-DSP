@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "music-analyzer"
+version = "0.2.0"
+description = "Desktop application for audio analysis via DSP (BPM, key detection, spectrograms)"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "PySide6>=6.5.0",
+    "librosa>=0.9.0",
+    "numpy>=1.21.0",
+    "matplotlib>=3.5.0",
+    "scipy>=1.7.0",
+]
+
+[project.urls]
+Repository = "https://github.com/IdkHexa/Analizador-de-canciones-DSP"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ---------------------------------------------------------------------------
+# Tool configuration
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "SIM", "ARG"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+strict = false
+python_version = "3.10"
+ignore_missing_imports = true

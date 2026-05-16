@@ -1,94 +1,158 @@
-# src/view/visualizer.py
+"""Matplotlib-based visualisation widgets for audio analysis.
 
-import matplotlib.pyplot as plt
+Provides an inheritance hierarchy:
+
+- :class:`BaseVisualizer` — abstract widget with a Matplotlib canvas.
+- :class:`SpectrogramVisualizer` — power spectrogram (dB).
+- :class:`KeyVisualizer` — normalised chromagram.
+
+Each subclass implements :meth:`draw_data` **polymorphically**.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
 import librosa.display
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas 
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from PySide6.QtWidgets import QVBoxLayout, QWidget
+
 
 class BaseVisualizer(QWidget):
+    """Abstract widget that hosts a Matplotlib figure and toolbar.
+
+    Subclasses **must** override :meth:`draw_data`.
+
+    Args:
+        title: Plot title displayed above the axes.
     """
-    Clase base (Herencia) para la visualización de Matplotlib.
-    Hereda de QWidget para ser un widget de PySide6.
-    """
-    def __init__(self, title, **kwargs):
+
+    def __init__(self, title: str, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.title = title
-        
-        # Inicialización de Matplotlib y Canvas (Lógica de Presentación/Herencia)
+
         self.figure, self.ax = plt.subplots(1, 1, figsize=(4, 3))
         self.canvas = FigureCanvas(self.figure)
-        self.toolbar = NavigationToolbar(self.canvas, self) # Barra de zoom/pan
+        self.toolbar = NavigationToolbar(self.canvas, self)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.addWidget(self.toolbar)
-        self.layout.addWidget(self.canvas)
-        
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+
         self.ax.set_title(self.title)
-        self.ax.set_axis_off() # Ocultar ejes hasta que haya datos
+        self.ax.set_axis_off()
 
-    def clear_plot(self):
-        """Limpia la gráfica actual."""
+    def clear_plot(self) -> None:
+        """Clear the current axes and redraw the empty canvas."""
         self.ax.clear()
         self.ax.set_title(self.title)
         self.ax.set_axis_off()
         self.canvas.draw()
 
-    def draw_data(self, data):
-        """Método polimórfico. Debe ser sobrescrito por subclases."""
+    def draw_data(self, data: Any) -> None:
+        """Render *data* onto the canvas.
+
+        Raises:
+            NotImplementedError: Subclasses must implement this method.
+        """
         raise NotImplementedError("draw_data() debe ser implementado por la subclase.")
-        
+
+
 class SpectrogramVisualizer(BaseVisualizer):
+    """Displays a power spectrogram (dB) over time.
+
+    Uses ``librosa.display.specshow`` with a logarithmic frequency axis
+    and the ``magma`` colour map.
     """
-    Clase hija (Herencia) para visualizar el Espectrograma de Potencia.
-    Implementa el Polimorfismo en draw_data.
-    """
-    def __init__(self, **kwargs):
+
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(title="Espectrograma de Potencia (dB)", **kwargs)
 
-    def draw_data(self, features):
-        """Polimorfismo: Dibuja un Espectrograma."""
+    def draw_data(self, features: dict[str, Any]) -> None:
+        """Render the spectrogram from *features['D']*.
+
+        Args:
+            features: Dictionary with keys ``D`` (spectrogram matrix),
+                      ``sr`` (sample rate).
+        """
         self.ax.clear()
-        
-        # CORRECCIÓN: Extraer la matriz D del diccionario features
-        D = features['D']  # ¡Esta es la corrección crítica!
-        sr = features['sr']
-        
-        # Lógica de dibujo de librosa (Lógica de Presentación)
-        img = librosa.display.specshow(D, sr=sr, x_axis='time', y_axis='log', ax=self.ax, cmap='magma', hop_length=512)
-        
+
+        spec_data: Any = features["D"]
+        sr: int = features["sr"]
+
+        img = librosa.display.specshow(
+            spec_data,
+            sr=sr,
+            x_axis="time",
+            y_axis="log",
+            ax=self.ax,
+            cmap="magma",
+            hop_length=512,
+        )
+
         self.ax.set_title(self.title)
         self.ax.set_xlabel("Tiempo (s)")
         self.ax.set_ylabel("Frecuencia (Hz)")
+
         if img:
-            # Añadir la barra de color
             cbar = self.figure.colorbar(img, format="%+2.0f dB", ax=self.ax)
-            cbar.ax.set_ylabel('Amplitud (dB)', rotation=270, labelpad=15)
+            cbar.ax.set_ylabel("Amplitud (dB)", rotation=270, labelpad=15)
+
         self.canvas.draw()
 
-class KeyVisualizer(BaseVisualizer):
-    """
-    Clase hija (Herencia) para visualizar el Cromagrama (Tonalidad).
-    Implementa el Polimorfismo en draw_data.
-    """
-    def __init__(self, **kwargs):
-        super().__init__(title="Cromagrama Normalizado (Tonalidad)", **kwargs)
-        # Notas utilizadas para etiquetar el eje Y
-        self.chromas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-    def draw_data(self, features):
-        """Polimorfismo: Dibuja un Cromagrama."""
+class KeyVisualizer(BaseVisualizer):
+    """Displays a normalised chromagram (pitch-class distribution).
+
+    The y-axis shows the 12 chroma bins (``C`` … ``B``) and the colour
+    map uses ``viridis``.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(title="Cromagrama Normalizado (Tonalidad)", **kwargs)
+        self.chromas: list[str] = [
+            "C",
+            "C#",
+            "D",
+            "D#",
+            "E",
+            "F",
+            "F#",
+            "G",
+            "G#",
+            "A",
+            "A#",
+            "B",
+        ]
+
+    def draw_data(self, features: dict[str, Any]) -> None:
+        """Render the chromagram from *features['chroma']*.
+
+        Args:
+            features: Dictionary with keys ``chroma`` (12×n array),
+                      ``sr`` (sample rate).
+        """
         self.ax.clear()
-        
-        chroma = features['chroma']
-        sr = features['sr']
-        
-        # Lógica de dibujo de librosa (Lógica de Presentación)
-        img = librosa.display.specshow(chroma, sr=sr, y_axis='chroma', x_axis='time', ax=self.ax, cmap='viridis')
+
+        chroma: Any = features["chroma"]
+        sr: int = features["sr"]
+
+        img = librosa.display.specshow(
+            chroma,
+            sr=sr,
+            y_axis="chroma",
+            x_axis="time",
+            ax=self.ax,
+            cmap="viridis",
+        )
 
         self.ax.set_title(self.title)
         self.ax.set_xlabel("Tiempo (s)")
         self.ax.set_ylabel("Clase de Tono")
+
         if img:
             self.figure.colorbar(img, ax=self.ax)
+
         self.canvas.draw()
