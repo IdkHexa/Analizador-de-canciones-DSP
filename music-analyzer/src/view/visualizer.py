@@ -81,11 +81,11 @@ class SpectrogramVisualizer(BaseVisualizer):
         """
         self.ax.clear()
 
-        D: Any = features["D"]
+        spec_data: Any = features["D"]
         sr: int = features["sr"]
 
         img = librosa.display.specshow(
-            D,
+            spec_data,
             sr=sr,
             x_axis="time",
             y_axis="log",

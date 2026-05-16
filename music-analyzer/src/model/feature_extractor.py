@@ -95,14 +95,14 @@ class FeatureExtractor:
         key = self._determine_key(chroma_mean)
 
         # 3. Power spectrogram
-        D = librosa.amplitude_to_db(np.abs(librosa.stft(y)), ref=np.max)
-        times = librosa.times_like(D, sr=sr)
+        spec_db = librosa.amplitude_to_db(np.abs(librosa.stft(y)), ref=np.max)
+        times = librosa.times_like(spec_db, sr=sr)
 
         features: dict[str, Any] = {
             "path": audio_file.get_path(),
             "tempo": float(tempo),
             "key": key,
-            "D": D,
+            "D": spec_db,
             "chroma": chroma,
             "sr": sr,
             "times": times,

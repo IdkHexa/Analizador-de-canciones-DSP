@@ -4,6 +4,11 @@ from __future__ import annotations
 
 import os
 import sys
+from typing import Any
+from unittest.mock import MagicMock
+
+import numpy as np
+import pytest
 
 # Ensure the ``src/`` directory is on the module path so that
 # production imports (``from model.xxx``, ``from config import ...``)
@@ -11,12 +16,6 @@ import sys
 _src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src")
 if _src not in sys.path:
     sys.path.insert(0, _src)
-
-from typing import Any
-from unittest.mock import MagicMock
-
-import numpy as np
-import pytest
 
 
 @pytest.fixture

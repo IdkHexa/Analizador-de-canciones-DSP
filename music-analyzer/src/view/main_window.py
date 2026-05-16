@@ -226,7 +226,8 @@ class MainWindow(QMainWindow):
             summary_data: Dictionary with ``File``, ``BPM``, ``Key`` etc.
         """
         html_parts = [
-            f"<p style='margin-bottom: 15px;'><b>{SUMMARY_ICONS.get(key, '•')} {key}:</b> {value}</p>"
+            "<p style='margin-bottom: 15px;'>"
+            f"<b>{SUMMARY_ICONS.get(key, '•')} {key}:</b> {value}</p>"
             for key, value in summary_data.items()
         ]
         self.summary_output.setText("".join(html_parts))
