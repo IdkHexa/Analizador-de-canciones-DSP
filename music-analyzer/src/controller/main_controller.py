@@ -10,7 +10,7 @@ import logging
 from typing import Any
 
 from PySide6.QtCore import QObject, QThread, Signal, Slot
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
 from config import AUDIO_FILE_PATTERNS
 from model.audio_file import AudioFile
@@ -26,12 +26,15 @@ class WorkerObject(QObject):
 
     Signals
     -------
+    progress(value: int):
+        Emitted with 0-100 during analysis for progress bar updates.
     finished(features: dict):
         Emitted when analysis completes successfully.
     error(message: str):
         Emitted when any error occurs during loading or analysis.
     """
 
+    progress = Signal(int)
     finished = Signal(dict)
     error = Signal(str)
 
@@ -55,17 +58,21 @@ class WorkerObject(QObject):
         """
         logger.info("Worker started for %s", self._filepath)
         try:
+            self.progress.emit(10)
             if not self._audio.load_audio(self._filepath):
                 self.error.emit("ERROR: No se pudo cargar el archivo de audio.")
                 return
 
+            self.progress.emit(50)
             features = self._extractor.extract_all_features(self._audio)
             if features.get("error"):
                 self.error.emit(f"ERROR: {features['error']}")
                 return
 
+            self.progress.emit(90)
             logger.info("Worker finished — emitting results")
             self.finished.emit(features)
+            self.progress.emit(100)
 
         except Exception as exc:
             logger.exception("Worker crashed")
@@ -87,6 +94,7 @@ class MainController(QObject):
     signal_summary_update = Signal(dict)
     signal_graph_update = Signal(dict)
     signal_filepath_update = Signal(str)
+    signal_progress = Signal(int)
     signal_history_update = Signal(list)
     signal_history_restore = Signal(int)
 
@@ -122,6 +130,7 @@ class MainController(QObject):
         self.signal_summary_update.connect(self.view_window.display_summary)
         self.signal_graph_update.connect(self.view_window.display_analysis)
         self.signal_filepath_update.connect(self.view_window.update_filepath)
+        self.signal_progress.connect(self.view_window.update_progress)
         self.signal_history_update.connect(self.view_window.update_history_list)
         self.signal_history_restore.connect(self.view_window.highlight_history_item)
 
@@ -163,6 +172,7 @@ class MainController(QObject):
         self._worker.moveToThread(self._thread)
 
         # Wire worker signals
+        self._worker.progress.connect(self.signal_progress.emit)
         self._worker.finished.connect(self._on_analysis_finished)
         self._worker.error.connect(self._on_analysis_error)
         self._thread.started.connect(self._worker.run)
@@ -192,8 +202,12 @@ class MainController(QObject):
         self.signal_history_update.emit(history_names)
 
     def _on_analysis_error(self, message: str) -> None:
-        """Handle an error from the worker thread."""
+        """Handle an error from the worker thread.
+
+        Updates the status label AND shows a modal error dialog.
+        """
         self.signal_status_update.emit(message, "red")
+        QMessageBox.critical(self.view_window, "Error de Análisis", message)
 
     # ------------------------------------------------------------------
     # History navigation

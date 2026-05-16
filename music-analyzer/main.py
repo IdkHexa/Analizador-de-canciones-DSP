@@ -7,16 +7,31 @@ Configures structured logging, wires up the **MVC** layers
 from __future__ import annotations
 
 import logging
+import logging.handlers
 import os
 import sys
 
 # ---------------------------------------------------------------------------
 # Logging configuration  (runs once at startup)
 # ---------------------------------------------------------------------------
+_LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+os.makedirs(_LOG_DIR, exist_ok=True)
+
+file_handler = logging.handlers.RotatingFileHandler(
+    os.path.join(_LOG_DIR, "music-analyzer.log"),
+    maxBytes=5 * 1024 * 1024,  # 5 MB
+    backupCount=3,
+    encoding="utf-8",
+)
+file_handler.setFormatter(
+    logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%H:%M:%S",
+    handlers=[logging.StreamHandler(), file_handler],
 )
 logger = logging.getLogger(__name__)
 
@@ -63,7 +78,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
-
-if __name__ == '__main__':
     main()
