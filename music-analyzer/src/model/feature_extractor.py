@@ -13,8 +13,8 @@ from typing import Any
 import librosa
 import numpy as np
 
-from src.config import CHROMA_NAMES, K_MAJOR, K_MINOR
-from src.model.audio_file import AudioFile
+from config import CHROMA_NAMES, K_MAJOR, K_MINOR
+from model.audio_file import AudioFile
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,12 @@ class FeatureExtractor:
         logger.info("Starting DSP pipeline on %s", audio_file.get_path())
 
         # 1. Tempo (BPM)
-        (tempo,) = librosa.beat.tempo(y=y, sr=sr)
+        # Use the modern API path (librosa >= 0.10).  Fall back to the
+        # old path for very old installations.
+        try:
+            (tempo,) = librosa.feature.rhythm.tempo(y=y, sr=sr)  # type: ignore[attr-defined]
+        except AttributeError:
+            (tempo,) = librosa.beat.tempo(y=y, sr=sr)
 
         # 2. Key (chroma-based)
         chroma = librosa.feature.chroma_stft(y=y, sr=sr)
