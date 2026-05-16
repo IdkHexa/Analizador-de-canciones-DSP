@@ -42,7 +42,9 @@ class AudioFile:
         self._path = path
         self._features_cache = {}
         try:
-            self._y, self._sr = librosa.load(path, sr=None, mono=True)
+            y, sr = librosa.load(path, sr=None, mono=True)
+            self._y = y
+            self._sr = int(sr)
             logger.info("Loaded audio: %s (%d samples @ %d Hz)", path, len(self._y), self._sr)
             return True
         except Exception as exc:

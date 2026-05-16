@@ -107,7 +107,7 @@ class MainWindow(QMainWindow):
 
         # 3. Summary title
         summary_title = QLabel("--- Resultados Escalares ---")
-        summary_title.setAlignment(Qt.AlignCenter)
+        summary_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font_title = QFont()
         font_title.setBold(True)
         font_title.setPointSize(11)
@@ -116,14 +116,16 @@ class MainWindow(QMainWindow):
         # 4. Summary output
         self.summary_output = QLabel()
         self.summary_output.setWordWrap(True)
-        self.summary_output.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        self.summary_output.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.summary_output.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.summary_output.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding
+        )
         self.summary_output.setStyleSheet(STYLE_SUMMARY_OUTPUT)
         self._set_default_summary()
 
         # 5. History section
         history_title = QLabel("--- Historial de Análisis ---")
-        history_title.setAlignment(Qt.AlignCenter)
+        history_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         history_title.setFont(font_title)
 
         self.history_list = QListWidget()
@@ -132,8 +134,8 @@ class MainWindow(QMainWindow):
 
         # 6. Separator
         line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
 
         # 7. Status
         self.status_label = QLabel("Listo para cargar.")

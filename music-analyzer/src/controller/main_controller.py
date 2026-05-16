@@ -10,12 +10,13 @@ import logging
 from typing import Any
 
 from PySide6.QtCore import QObject, QThread, Signal, Slot
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QWidget
 
 from config import AUDIO_FILE_PATTERNS
 from model.audio_file import AudioFile
 from model.feature_extractor import FeatureExtractor
 from model.playlist_analyzer import PlaylistAnalyzer, SingleTrackResult
+from view.main_window import MainWindow
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ class MainController(QObject):
         self,
         model_audio: AudioFile,
         model_extractor: FeatureExtractor,
-        view_window: QObject,
+        view_window: MainWindow,
     ) -> None:
         super().__init__()
         self.model_audio = model_audio
@@ -136,7 +137,7 @@ class MainController(QObject):
         to keep the View free of I/O logic.
         """
         filepath, _ = QFileDialog.getOpenFileName(
-            self.view_window,
+            QWidget(self.view_window),
             "Seleccionar Archivo de Audio",
             "",
             AUDIO_FILE_PATTERNS,
