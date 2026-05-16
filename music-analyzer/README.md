@@ -1,181 +1,205 @@
-Analizador de Música DSP
+# Analizador de Música DSP
 
-Aplicación de escritorio para análisis de audio mediante Procesamiento Digital de Señales (DSP). Extrae características musicales como BPM, tonalidad y genera visualizaciones de espectrogramas y cromagramas.
+Aplicación de escritorio para análisis de audio mediante Procesamiento Digital de Señales (DSP). Extrae características musicales como **BPM** y **tonalidad**, y genera visualizaciones de **espectrogramas** y **cromagramas**.
 
-Características
+## Características
 
-Análisis de Tempo (BPM): Detección automática del tempo musical
-Detección de Tonalidad: Identifica la clave musical (Mayor/Menor) usando el algoritmo Krumhansl-Schmuckler
-Espectrograma de Potencia: Visualización frecuencia-tiempo en escala logarítmica
-Cromagrama: Representación visual de la distribución de clases de tonos
-Interfaz Gráfica Moderna: Construida con PySide6 (Qt for Python)
-Arquitectura MVC: Modelo-Vista-Controlador para código mantenible
+- **Análisis de Tempo (BPM)**: Detección automática del tempo musical
+- **Detección de Tonalidad**: Identifica la clave musical (Mayor/Menor) usando el algoritmo Krumhansl-Schmuckler
+- **Espectrograma de Potencia**: Visualización frecuencia-tiempo en escala logarítmica
+- **Cromagrama**: Representación visual de la distribución de clases de tonos
+- **Historial de Análisis**: Navegación entre tracks analizados previamente
+- **Procesamiento en segundo plano**: La UI nunca se congela gracias a QThread
+- **Interfaz Gráfica Moderna**: Construida con PySide6 (Qt for Python)
+- **Arquitectura MVC**: Modelo-Vista-Controlador con signals/slots
 
-Tecnologías
+## Tecnologías
 
-Python 3.8+
-PySide6: Framework de interfaz gráfica
-librosa: Biblioteca de análisis de audio y música
-NumPy: Computación numérica
-Matplotlib: Visualización de datos
+| Tecnología | Versión mínima | Propósito |
+|-----------|---------------|-----------|
+| Python | 3.10+ | Lenguaje base |
+| PySide6 | 6.5.0 | Framework de interfaz gráfica |
+| librosa | 0.9.0 | Análisis de audio y música |
+| NumPy | 1.21.0 | Computación numérica |
+| Matplotlib | 3.5.0 | Visualización de datos |
+| SciPy | 1.7.0 | Generación de señales de prueba |
+| pytest | — | Testing automatizado |
+| ruff | — | Linter y formateador |
+| mypy | — | Type checker estático |
 
-1. Clonar el repositorio
+## Instalación
 
-gh repo clone IdkHexa/Analizador-de-canciones-DSP
+```bash
+# 1. Clonar
+git clone https://github.com/IdkHexa/Analizador-de-canciones-DSP.git
 cd music-analyzer
 
-2. Crear entorno virtual (recomendado)
+# 2. Crear entorno virtual (recomendado)
+python -m venv venv
 
 # Windows
-python -m venv venv
 venv\Scripts\activate
-
 # Linux/Mac
-python3 -m venv venv
 source venv/bin/activate
 
-3. Instalar dependencias
-
+# 3. Instalar dependencias
 pip install -r requirements.txt
+```
 
-requirements.txt:
+## Uso
 
-PySide6>=6.5.0
-librosa>=0.9.0
-numpy>=1.21.0
-matplotlib>=3.5.0
-soundfile>=0.11.0
-
- Uso
-Ejecutar la aplicación
-
+```bash
 python main.py
+```
 
-Pasos para analizar audio
+Pasos para analizar audio:
 
-Click en "Cargar y Analizar Audio..."
-Selecciona un archivo de audio (MP3, WAV, FLAC)
-Espera a que se complete el análisis
-Visualiza los resultados:
+1. Click en **"Cargar y Analizar Audio..."**
+2. Seleccioná un archivo de audio (MP3, WAV, FLAC)
+3. Esperá a que se complete el análisis
+4. Visualizá los resultados:
+   - **Panel izquierdo**: BPM, Tonalidad, historial de análisis
+   - **Panel derecho**: Espectrograma y Cromagrama interactivos
+5. Clickeá cualquier entrada del historial para restaurar análisis previos
 
-Panel izquierdo: BPM, Tonalidad, Nombre del archivo
-Panel derecho: Espectrograma y Cromagrama interactivos
+## Estructura del Proyecto
 
-Estructura del Proyecto
-
+```
 music-analyzer/
 │
-├── main.py                          # Punto de entrada de la aplicación
+├── main.py                              # Punto de entrada
+├── pyproject.toml                       # Packaging y tool config
+├── .pre-commit-config.yaml              # Hooks de ruff, black, mypy
+├── requirements.txt                     # Dependencias del proyecto
+├── README.md                            # Este archivo
 │
 ├── src/
-│   ├── model/                       # Capa de Modelo (Lógica de negocio)
-│   │   ├── __init__.py
-│   │   ├── audio_file.py           # Encapsulamiento de datos de audio
-│   │   ├── feature_extractor.py    # Extracción de características DSP
-│   │   └── playlist_analyzer.py    # Análisis agregado de playlists
+│   ├── config/                          # Configuración centralizada
+│   │   └── __init__.py                  # Constantes DSP, estilos UI, settings
 │   │
-│   ├── view/                        # Capa de Vista (Interfaz gráfica)
+│   ├── model/                           # Capa de Modelo (lógica de negocio)
 │   │   ├── __init__.py
-│   │   ├── main_window.py          # Ventana principal
-│   │   └── visualizer.py           # Visualizadores Matplotlib
+│   │   ├── audio_file.py               # Encapsulamiento de datos de audio
+│   │   ├── feature_extractor.py        # Extracción de características DSP
+│   │   └── playlist_analyzer.py        # Análisis agregado de playlists
 │   │
-│   └── controller/                  # Capa de Controlador (Orquestación)
+│   ├── view/                            # Capa de Vista (interfaz gráfica)
+│   │   ├── __init__.py
+│   │   ├── main_window.py              # Ventana principal con historial
+│   │   └── visualizer.py               # Visualizadores Matplotlib
+│   │
+│   └── controller/                      # Capa de Controlador (orquestación)
 │       ├── __init__.py
-│       └── main_controller.py      # Controlador principal MVC
+│       └── main_controller.py           # WorkerObject + QThread + historial
 │
-├── requirements.txt                 # Dependencias del proyecto
-└── README.md                        # Este archivo
+├── tests/                               # Tests automatizados
+│   ├── conftest.py                      # Fixtures compartidos
+│   ├── fixtures/
+│   │   ├── generate_wav.py             # Generador de WAV sintético
+│   │   └── sine_440.wav                # WAV de prueba (440 Hz, 2s)
+│   ├── test_audio_file.py              # Tests de AudioFile (mocked)
+│   ├── test_feature_extractor.py       # Tests de detección de key + pipeline
+│   ├── test_integration.py             # Tests end-to-end con WAV real
+│   └── test_results.py                 # Tests de SingleTrackResult y aggregates
+│
+└── .github/workflows/
+    └── ci.yml                           # CI matrix (3.10, 3.11, 3.12)
+```
 
-Principios de POO Implementados
-Este proyecto demuestra los siguientes conceptos de Programación Orientada a Objetos:
-1. Encapsulamiento
+## Testing y Calidad
 
-AudioFile: Protege atributos privados (_y, _sr) con métodos getter/setter
-Separación clara entre datos internos y API pública
+```bash
+# Tests
+pytest                     # 22 tests, 0 fallos esperados
 
-2. Abstracción
+# Linter
+ruff check src/ tests/     # 0 errores
 
-FeatureExtractor: Oculta la complejidad del DSP de librosa
-Expone métodos simples como extract_all_features()
+# Formateo
+ruff format --check src/ tests/
 
-3. Herencia
+# Type checking
+mypy src/                  # Success: no issues found
 
-BaseVisualizer → SpectrogramVisualizer, KeyVisualizer
-AnalysisResultBase → SingleTrackResult, AggregatePlaylistResult
+# Pre-commit (opcional)
+pre-commit install
+pre-commit run --all-files
+```
 
-4. Polimorfismo
+El proyecto corre **CI automatizado** en GitHub Actions para Python 3.10, 3.11 y 3.12 en cada push y PR.
 
-Método draw_data() implementado de forma diferente en cada visualizador
-Método get_summary() con comportamiento específico por tipo de resultado
+## Principios de Ingeniería Implementados
 
-5. Patrón MVC (Model-View-Controller)
+### Patrón MVC (Model-View-Controller)
+- **Model**: Lógica de negocio y procesamiento DSP
+- **View**: Interfaz gráfica PySide6 con signals
+- **Controller**: Orquestación y comunicación via QThread + signals/slots
 
-Model: Lógica de negocio y procesamiento DSP
-View: Interfaz gráfica PySide6
-Controller: Orquestación y comunicación via Signals/Slots
+### Programación Orientada a Objetos
+- **Encapsulamiento**: `AudioFile` protege `_y` y `_sr` con getters
+- **Abstracción**: `FeatureExtractor` oculta la complejidad de librosa
+- **Herencia**: `BaseVisualizer → SpectrogramVisualizer, KeyVisualizer`
+- **Polimorfismo**: `draw_data()` implementado de forma diferente en cada visualizador
 
-Algoritmos DSP Utilizados
-Detección de Tempo
+### Buenas Prácticas
+- ✅ **Type hints** en toda la codebase (verificados con mypy)
+- ✅ **Google-style docstrings** en todas las clases y métodos públicos
+- ✅ **Logging estructurado** en vez de print()
+- ✅ **QThread** para operaciones async (no bloquea la UI)
+- ✅ **Config centralizada** (src/config/) sin constantes hardcodeadas
+- ✅ **22 tests automatizados** (unitarios + integración)
+- ✅ **CI/CD** con GitHub Actions
+- ✅ **Pre-commit hooks** (ruff, black, mypy)
+- ✅ **Packaging moderno** (pyproject.toml)
 
-tempo = librosa.beat.tempo(y=y, sr=sr)
+## Algoritmos DSP Utilizados
 
-Utiliza análisis de onset y autocorrelación para detectar BPM.
-Detección de Tonalidad
-Implementa el algoritmo Krumhansl-Schmuckler:
+### Detección de Tempo
+Usa `librosa.feature.rhythm.tempo` con análisis de onset y autocorrelación.
 
-Extrae características cromáticas con STFT
-Calcula vector promedio de 12 clases de tonos
-Compara con plantillas Mayor/Menor rotadas
-Selecciona la clave con mayor correlación
+### Detección de Tonalidad
+Implementa el **algoritmo Krumhansl-Schmuckler**:
 
-Espectrograma
+1. Extrae características cromáticas con STFT
+2. Calcula vector promedio de 12 clases de tonos
+3. Correlaciona con plantillas Mayor/Menor rotadas
+4. Selecciona la clave con mayor correlación
 
-D = librosa.amplitude_to_db(np.abs(librosa.stft(y)), ref=np.max)
+### Espectrograma de Potencia
+STFT (Short-Time Fourier Transform) convertida a escala de decibelios con `librosa.amplitude_to_db`.
 
-Transformada de Fourier de Tiempo Corto (STFT) convertida a escala de decibelios.
+## Troubleshooting
 
-Error: "ModuleNotFoundError: No module named 'model'"
-Solución: Asegúrate de que existen los archivos __init__.py en cada carpeta:
+| Error | Solución |
+|-------|----------|
+| `ModuleNotFoundError: No module named 'librosa'` | `pip install -r requirements.txt` |
+| `FutureWarning: librosa.beat.tempo` | Inocuo — el código usa try/except para ambas API |
+| Audio no se carga | Verificar formato (MP3, WAV, FLAC) y que `soundfile` esté instalado |
 
-touch src/model/__init__.py
-touch src/view/__init__.py
-touch src/controller/__init__.py
+## Ejemplos de Salida
 
-Error: "dict object has no attribute 'dtype'"
-Solución: Ya corregido en visualizer.py línea 59. Actualiza el archivo.
-
-Warning: "librosa.beat.tempo FutureWarning"
-Solución: Puedes ignorarlo o actualizar librosa:
-
-pip install --upgrade librosa
-
-Audio no se carga
-Verificar:
-
-El archivo está en formato soportado (MP3, WAV, FLAC)
-soundfile o audioread están instalados correctamente
-El archivo no está corrupto
-
-Ejemplos de Salida
-Análisis de una pista:
+```
 Archivo: cancion.mp3
 BPM: 120.00
 Key: C Mayor
-Espectrograma: Muestra la distribución de energía en frecuencias a lo largo del tiempo
-Cromagrama: Visualiza la distribución de las 12 clases de tonos (C, C#, D, ..., B)
+```
 
-Autor
+- **Espectrograma**: Distribución de energía en frecuencias a lo largo del tiempo
+- **Cromagrama**: Distribución de las 12 clases de tonos (C, C#, D, ..., B)
+
+## Autor
+
 Desarrollado como proyecto educativo para demostrar conceptos de:
 
-Programación Orientada a Objetos
-Arquitectura MVC
-Procesamiento Digital de Señales
-Desarrollo de aplicaciones GUI con Python
+- Programación Orientada a Objetos
+- Arquitectura MVC
+- Procesamiento Digital de Señales
+- Testing automatizado y CI/CD
+- Desarrollo de aplicaciones GUI con Python
 
-Referencias
+## Referencias
 
-https://librosa.org/doc/latest/index.html
-https://doc.qt.io/qtforpython-6/
-https://rnhart.net/articles/key-finding/
-
-https://www.dspguide.com/
+- [librosa](https://librosa.org/doc/latest/index.html)
+- [PySide6](https://doc.qt.io/qtforpython-6/)
+- [Krumhansl-Schmuckler key-finding](https://rnhart.net/articles/key-finding/)
+- [The Scientist and Engineer's Guide to DSP](https://www.dspguide.com/)
