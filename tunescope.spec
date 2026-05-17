@@ -1,6 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 """PyInstaller spec for TuneScope — Music Analyzer."""
 
+import os
+import sys
 from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 BLOCK_CIPHER_LIST = None
@@ -14,6 +16,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ("src", "src"),
+        ("assets", "assets"),
     ] + pil_data,
     hiddenimports=[
         "PySide6.QtCore",
@@ -61,5 +64,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="assets/icon.ico",
+    icon=os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "icon.ico"),
 )

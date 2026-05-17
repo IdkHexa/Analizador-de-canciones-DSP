@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 from typing import Any
 
 from PySide6.QtCore import Qt, Signal
@@ -46,6 +47,19 @@ from .visualizer import KeyVisualizer, SpectrogramVisualizer, WaveformVisualizer
 logger = logging.getLogger(__name__)
 
 
+def _resource_path(relative_path: str) -> str:
+    """Get absolute path to a bundled resource file.
+
+    Works both in development (``python main.py``) and when running
+    from a PyInstaller-built executable.
+    """
+    if getattr(sys, "frozen", False):
+        base = sys._MEIPASS  # noqa: SLF001  # PyInstaller attribute
+    else:
+        base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
+    return os.path.join(base, relative_path)
+
+
 class MainWindow(QMainWindow):
     """Desktop window for the Music Analyzer application.
 
@@ -66,7 +80,7 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle(WINDOW_TITLE)
-        self.setWindowIcon(QIcon("assets/icon.ico"))
+        self.setWindowIcon(QIcon(_resource_path("assets/icon.ico")))
         self.setMinimumSize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
         self.setAcceptDrops(True)
 
