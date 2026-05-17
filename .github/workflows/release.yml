@@ -70,8 +70,12 @@ jobs:
   release:
     needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: TuneScope-Windows
@@ -83,19 +87,18 @@ jobs:
           path: release-assets/linux
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: Release ${{ github.ref_name }}
-          body: |
-            ## TuneScope ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "TuneScope ${{ github.ref_name }}" \
+            --notes "## TuneScope ${{ github.ref_name }}
 
             ### Downloads
-            - **Windows**: `TuneScope.exe` (standalone, no Python required)
-            - **Linux**: `TuneScope` (AppImage-style binary)
+            - **Windows**: \`TuneScope.exe\` (standalone, no Python required)
+            - **Linux**: \`TuneScope\` (standalone binary)
 
             ### Install
-            Download the executable for your platform and run it directly.
-          files: |
-            release-assets/windows/TuneScope.exe
+            Download the executable for your platform and run it directly." \
+            release-assets/windows/TuneScope.exe \
             release-assets/linux/TuneScope
-          generate_release_notes: true
