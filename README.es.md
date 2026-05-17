@@ -1,6 +1,7 @@
 # Analizador de Música DSP
 
 ![CI](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/ci.yml/badge.svg)
+![Release](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/release.yml/badge.svg)
 
 > [**Read in English**](README.md)
 

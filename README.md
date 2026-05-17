@@ -1,6 +1,7 @@
-# DSP Music Analyzer
+# TuneScope — DSP Music Analyzer
 
 ![CI](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/ci.yml/badge.svg)
+![Release](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/release.yml/badge.svg)
 
 > [**Leer en español**](README.es.md)
 
@@ -87,6 +88,26 @@ source venv/bin/activate
 # 3. Install dependencies
 pip install -r requirements.txt
 ```
+
+## Building an Executable
+
+> Skip this if you just want to run the app — `python main.py` is enough.
+
+You can build a standalone executable for distribution (no Python required):
+
+```bash
+# Install PyInstaller
+pip install pyinstaller
+
+# Build
+pyinstaller --clean tunescope.spec
+
+# The executable will be at:
+#   dist/TuneScope.exe    (Windows)
+#   dist/TuneScope        (Linux)
+```
+
+Pre-built binaries are available in the [Releases](https://github.com/IdkHexa/Analizador-de-canciones-DSP/releases) page.
 
 ## Usage
 
