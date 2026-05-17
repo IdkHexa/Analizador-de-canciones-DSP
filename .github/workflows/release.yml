@@ -51,7 +51,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libsndfile1 libgl1-mesa-glx libegl1-mesa
+          sudo apt-get install -y -qq libsndfile1 libgl1 libegl1
 
       - name: Install dependencies
         run: |
@@ -75,12 +75,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: TuneScope-Windows
-          path: release-assets
+          path: release-assets/windows
 
       - uses: actions/download-artifact@v4
         with:
           name: TuneScope-Linux
-          path: release-assets
+          path: release-assets/linux
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -96,5 +96,6 @@ jobs:
             ### Install
             Download the executable for your platform and run it directly.
           files: |
-            release-assets/*
+            release-assets/windows/TuneScope.exe
+            release-assets/linux/TuneScope
           generate_release_notes: true
