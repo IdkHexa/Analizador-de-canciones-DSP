@@ -1,7 +1,7 @@
 # Analizador de Música DSP
 
-![CI](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/ci.yml/badge.svg)
-![Release](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/release.yml/badge.svg)
+![CI](https://github.com/IdkHexa/TuneScope/actions/workflows/ci.yml/badge.svg)
+![Release](https://github.com/IdkHexa/TuneScope/actions/workflows/release.yml/badge.svg)
 
 > [**Read in English**](README.md)
 
@@ -74,8 +74,8 @@ Cada análisis produce tres visualizaciones interactivas (con zoom y pan):
 
 ```bash
 # 1. Clonar
-git clone https://github.com/IdkHexa/Analizador-de-canciones-DSP.git
-cd Analizador-de-canciones-DSP
+git clone https://github.com/IdkHexa/TuneScope.git
+cd TuneScope
 
 # 2. Entorno virtual (recomendado)
 python -m venv venv
@@ -88,6 +88,26 @@ source venv/bin/activate
 # 3. Instalar dependencias
 pip install -r requirements.txt
 ```
+
+## Compilar Ejecutable
+
+> Salteate esto si solo querés correr la app — `python main.py` es suficiente.
+
+Podés compilar un ejecutable standalone (no requiere Python):
+
+```bash
+pip install pyinstaller
+pyinstaller --clean tunescope.spec
+# Resultado: dist/TuneScope.exe (Windows) o dist/TuneScope (Linux)
+```
+
+> ⚠️ **Falso positivo de Windows Defender**: El ejecutable está compilado con PyInstaller, que empaqueta Python y todas las dependencias en un solo `.exe`. Windows puede marcarlo como amenaza porque **no tiene firma digital** (los certificados de firma cuestan ~$200-300/año). Es un **falso positivo** — el ejecutable es seguro. Para usarlo:
+> 1. Click derecho en `TuneScope.exe` → **Propiedades**
+> 2. Marcar **Desbloquear** (si aparece)
+> 3. **Aplicar** → **Aceptar**
+> 4. Ejecutar normalmente
+
+Los binarios pre-compilados están en [Releases](https://github.com/IdkHexa/TuneScope/releases).
 
 ## Uso
 
@@ -108,7 +128,7 @@ Pasos para analizar audio:
 ## Estructura del Proyecto
 
 ```
-Analizador-de-canciones-DSP/
+TuneScope/
 │
 ├── main.py                              # Punto de entrada
 ├── pyproject.toml                       # Packaging y tool config

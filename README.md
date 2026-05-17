@@ -1,7 +1,7 @@
 # TuneScope — DSP Music Analyzer
 
-![CI](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/ci.yml/badge.svg)
-![Release](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/release.yml/badge.svg)
+![CI](https://github.com/IdkHexa/TuneScope/actions/workflows/ci.yml/badge.svg)
+![Release](https://github.com/IdkHexa/TuneScope/actions/workflows/release.yml/badge.svg)
 
 > [**Leer en español**](README.es.md)
 
@@ -74,8 +74,8 @@ Each analysis produces three interactive plots (zoom & pan enabled):
 
 ```bash
 # 1. Clone
-git clone https://github.com/IdkHexa/Analizador-de-canciones-DSP.git
-cd Analizador-de-canciones-DSP
+git clone https://github.com/IdkHexa/TuneScope.git
+cd TuneScope
 
 # 2. Virtual environment (recommended)
 python -m venv venv
@@ -107,7 +107,13 @@ pyinstaller --clean tunescope.spec
 #   dist/TuneScope        (Linux)
 ```
 
-Pre-built binaries are available in the [Releases](https://github.com/IdkHexa/Analizador-de-canciones-DSP/releases) page.
+> ⚠️ **Windows SmartScreen / Defender false positive**: The executable is built with PyInstaller, which bundles Python and all dependencies into a single `.exe` file. Windows may flag it as a threat because it is unsigned (code signing certificates cost ~$200-300/year). This is a **false positive** — the executable is safe. To use it:
+> 1. Right-click `TuneScope.exe` → **Properties**
+> 2. Check **Unblock** (if available)
+> 3. Click **Apply** → **OK**
+> 4. Run the executable normally
+
+Pre-built binaries are available in the [Releases](https://github.com/IdkHexa/TuneScope/releases) page.
 
 ## Usage
 
@@ -128,7 +134,7 @@ Steps to analyze audio:
 ## Project Structure
 
 ```
-Analizador-de-canciones-DSP/
+TuneScope/
 │
 ├── main.py                              # Entry point
 ├── pyproject.toml                       # Packaging & tool config
