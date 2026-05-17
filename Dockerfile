@@ -14,8 +14,8 @@ FROM python:3.12-slim
 
 RUN apt-get update -qq && apt-get install -y -qq \
     libsndfile1 \
-    libgl1-mesa-glx \
-    libegl1-mesa \
+    libgl1 \
+    libegl1 \
     libxkbcommon0 \
     libdbus-1-3 \
     && rm -rf /var/lib/apt/lists/*
@@ -25,5 +25,9 @@ COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 COPY . .
+
+# Use offscreen platform by default (no display required).
+# Override with QT_QPA_PLATFORM=xcb when DISPLAY is available.
+ENV QT_QPA_PLATFORM=offscreen
 
 ENTRYPOINT ["python", "main.py"]
