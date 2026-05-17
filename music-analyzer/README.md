@@ -1,6 +1,10 @@
 # Analizador de Música DSP
 
-Aplicación de escritorio para análisis de audio mediante Procesamiento Digital de Señales (DSP). Extrae características musicales como **BPM** y **tonalidad**, y genera visualizaciones de **espectrogramas** y **cromagramas**.
+![CI](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/ci.yml/badge.svg)
+
+Aplicación de escritorio para análisis de audio mediante Procesamiento Digital de Señales (DSP). Extrae características musicales como **BPM** y **tonalidad**, y genera visualizaciones de **espectrogramas**, **cromagramas** y **forma de onda**.
+
+![Ventana principal](assets/waveform.png)
 
 ## Características
 
@@ -8,10 +12,46 @@ Aplicación de escritorio para análisis de audio mediante Procesamiento Digital
 - **Detección de Tonalidad**: Identifica la clave musical (Mayor/Menor) usando el algoritmo Krumhansl-Schmuckler
 - **Espectrograma de Potencia**: Visualización frecuencia-tiempo en escala logarítmica
 - **Cromagrama**: Representación visual de la distribución de clases de tonos
+- **Forma de Onda**: Visualización temporal de la señal de audio
 - **Historial de Análisis**: Navegación entre tracks analizados previamente
+- **Exportación de resultados**: Guarda análisis en formato JSON o CSV
 - **Procesamiento en segundo plano**: La UI nunca se congela gracias a QThread
+- **Drag & Drop**: Arrastrá archivos de audio directamente a la ventana
+- **Análisis por lotes**: Procesá múltiples archivos en secuencia
 - **Interfaz Gráfica Moderna**: Construida con PySide6 (Qt for Python)
 - **Arquitectura MVC**: Modelo-Vista-Controlador con signals/slots
+
+## Demostración
+
+### Visualizaciones generadas
+
+Cada análisis produce tres visualizaciones interactivas (con zoom y pan):
+
+| Espectrograma | Cromagrama |
+|:---:|:---:|
+| ![Espectrograma](assets/spectrogram.png) | ![Cromagrama](assets/chromagram.png) |
+
+| Waveform |
+|:---:|
+| ![Waveform](assets/waveform.png) |
+
+### Flujo de uso
+
+```
+1. Clic en "Cargar y Analizar Audio..." (o arrastrá un archivo)
+       │
+       ▼
+2. Barra de progreso muestra el avance del análisis
+       │
+       ▼
+3. Resultados escalares: BPM, Tonalidad
+       │
+       ▼
+4. Visualizaciones: Waveform → Espectrograma → Cromagrama
+       │
+       ▼
+5. Exportá a JSON/CSV o navegá el historial
+```
 
 ## Tecnologías
 
