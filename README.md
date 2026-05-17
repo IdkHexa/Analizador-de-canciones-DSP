@@ -1,80 +1,82 @@
-# Analizador de Música DSP
+# DSP Music Analyzer
 
 ![CI](https://github.com/IdkHexa/Analizador-de-canciones-DSP/actions/workflows/ci.yml/badge.svg)
 
-Aplicación de escritorio para análisis de audio mediante Procesamiento Digital de Señales (DSP). Extrae características musicales como **BPM** y **tonalidad**, y genera visualizaciones de **espectrogramas**, **cromagramas** y **forma de onda**.
+> [**Leer en español**](README.es.md)
 
-![Ventana principal](assets/waveform.png)
+A desktop application for audio analysis through **Digital Signal Processing (DSP)**. Extracts musical features like **BPM** and **key/tonality**, and generates interactive visualizations of **spectrograms**, **chromagrams**, and **waveforms**.
 
-## Características
+![Main window preview](assets/waveform.png)
 
-- **Análisis de Tempo (BPM)**: Detección automática del tempo musical
-- **Detección de Tonalidad**: Identifica la clave musical (Mayor/Menor) usando el algoritmo Krumhansl-Schmuckler
-- **Espectrograma de Potencia**: Visualización frecuencia-tiempo en escala logarítmica
-- **Cromagrama**: Representación visual de la distribución de clases de tonos
-- **Forma de Onda**: Visualización temporal de la señal de audio
-- **Historial de Análisis**: Navegación entre tracks analizados previamente
-- **Exportación de resultados**: Guarda análisis en formato JSON o CSV
-- **Procesamiento en segundo plano**: La UI nunca se congela gracias a QThread
-- **Drag & Drop**: Arrastrá archivos de audio directamente a la ventana
-- **Análisis por lotes**: Procesá múltiples archivos en secuencia
-- **Interfaz Gráfica Moderna**: Construida con PySide6 (Qt for Python)
-- **Arquitectura MVC**: Modelo-Vista-Controlador con signals/slots
+## Features
 
-## Demostración
+- **Tempo (BPM) Detection**: Automatic musical tempo estimation
+- **Key Detection**: Identifies major/minor keys using the Krumhansl-Schmuckler algorithm
+- **Power Spectrogram**: Frequency-time visualization in logarithmic scale
+- **Chromagram**: Pitch-class distribution visualization
+- **Waveform**: Time-domain signal display
+- **Analysis History**: Navigate previously analyzed tracks with one click
+- **Export Results**: Save analysis as JSON or CSV
+- **Background Processing**: UI never freezes thanks to QThread
+- **Drag & Drop**: Drop audio files directly onto the window
+- **Batch Analysis**: Process multiple files sequentially
+- **Modern GUI**: Built with PySide6 (Qt for Python)
+- **MVC Architecture**: Model-View-Controller with signals/slots
 
-### Visualizaciones generadas
+## Demo
 
-Cada análisis produce tres visualizaciones interactivas (con zoom y pan):
+### Generated Visualizations
 
-| Espectrograma | Cromagrama |
+Each analysis produces three interactive plots (zoom & pan enabled):
+
+| Spectrogram | Chromagram |
 |:---:|:---:|
-| ![Espectrograma](assets/spectrogram.png) | ![Cromagrama](assets/chromagram.png) |
+| ![Spectrogram](assets/spectrogram.png) | ![Chromagram](assets/chromagram.png) |
 
 | Waveform |
 |:---:|
 | ![Waveform](assets/waveform.png) |
 
-### Flujo de uso
+### Usage Flow
 
 ```
-1. Clic en "Cargar y Analizar Audio..." (o arrastrá un archivo)
+1. Click "Cargar y Analizar Audio..." (or drag a file)
        │
        ▼
-2. Barra de progreso muestra el avance del análisis
+2. Progress bar shows analysis status
        │
        ▼
-3. Resultados escalares: BPM, Tonalidad
+3. Scalar results: BPM, Key
        │
        ▼
-4. Visualizaciones: Waveform → Espectrograma → Cromagrama
+4. Visualizations: Waveform → Spectrogram → Chromagram
        │
        ▼
-5. Exportá a JSON/CSV o navegá el historial
+5. Export to JSON/CSV or browse history
 ```
 
-## Tecnologías
+## Technologies
 
-| Tecnología | Versión mínima | Propósito |
-|-----------|---------------|-----------|
-| Python | 3.10+ | Lenguaje base |
-| PySide6 | 6.5.0 | Framework de interfaz gráfica |
-| librosa | 0.9.0 | Análisis de audio y música |
-| NumPy | 1.21.0 | Computación numérica |
-| Matplotlib | 3.5.0 | Visualización de datos |
-| SciPy | 1.7.0 | Generación de señales de prueba |
-| pytest | — | Testing automatizado |
-| ruff | — | Linter y formateador |
-| mypy | — | Type checker estático |
+| Technology | Min. version | Purpose |
+|-----------|-------------|---------|
+| Python | 3.10+ | Language |
+| PySide6 | 6.5.0 | GUI framework |
+| librosa | 0.9.0 | Audio & music analysis |
+| NumPy | 1.21.0 | Numerical computation |
+| Matplotlib | 3.5.0 | Data visualization |
+| SciPy | 1.7.0 | Test signal generation |
+| pytest | — | Automated testing |
+| ruff | — | Linter & formatter |
+| mypy | — | Static type checker |
 
-## Instalación
+## Installation
 
 ```bash
-# 1. Clonar
+# 1. Clone
 git clone https://github.com/IdkHexa/Analizador-de-canciones-DSP.git
-cd music-analyzer
+cd Analizador-de-canciones-DSP
 
-# 2. Crear entorno virtual (recomendado)
+# 2. Virtual environment (recommended)
 python -m venv venv
 
 # Windows
@@ -82,162 +84,173 @@ venv\Scripts\activate
 # Linux/Mac
 source venv/bin/activate
 
-# 3. Instalar dependencias
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
 
-## Uso
+## Usage
 
 ```bash
 python main.py
 ```
 
-Pasos para analizar audio:
+Steps to analyze audio:
 
-1. Click en **"Cargar y Analizar Audio..."**
-2. Seleccioná un archivo de audio (MP3, WAV, FLAC)
-3. Esperá a que se complete el análisis
-4. Visualizá los resultados:
-   - **Panel izquierdo**: BPM, Tonalidad, historial de análisis
-   - **Panel derecho**: Espectrograma y Cromagrama interactivos
-5. Clickeá cualquier entrada del historial para restaurar análisis previos
+1. Click **"Cargar y Analizar Audio..."** (or drag a file onto the window)
+2. Select an audio file (MP3, WAV, FLAC)
+3. Wait for the analysis to complete
+4. View the results:
+   - **Left panel**: BPM, Key, analysis history
+   - **Right panel**: Interactive waveform, spectrogram, and chromagram
+5. Click any history entry to restore a previous analysis
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
-music-analyzer/
+Analizador-de-canciones-DSP/
 │
-├── main.py                              # Punto de entrada
-├── pyproject.toml                       # Packaging y tool config
-├── .pre-commit-config.yaml              # Hooks de ruff, black, mypy
-├── requirements.txt                     # Dependencias del proyecto
-├── README.md                            # Este archivo
+├── main.py                              # Entry point
+├── pyproject.toml                       # Packaging & tool config
+├── .pre-commit-config.yaml              # ruff, black, mypy hooks
+├── requirements.txt                     # Dependencies
+├── README.md                            # This file (English)
+├── README.es.md                         # Spanish version
 │
 ├── src/
-│   ├── config/                          # Configuración centralizada
-│   │   └── __init__.py                  # Constantes DSP, estilos UI, settings
+│   ├── config/                          # Centralized configuration
+│   │   └── __init__.py                  # DSP constants, UI styles, settings
 │   │
-│   ├── model/                           # Capa de Modelo (lógica de negocio)
+│   ├── model/                           # Model layer (business logic)
 │   │   ├── __init__.py
-│   │   ├── audio_file.py               # Encapsulamiento de datos de audio
-│   │   ├── feature_extractor.py        # Extracción de características DSP
-│   │   └── playlist_analyzer.py        # Análisis agregado de playlists
+│   │   ├── audio_file.py               # Audio data encapsulation
+│   │   ├── feature_extractor.py        # DSP feature extraction
+│   │   └── playlist_analyzer.py        # Aggregated playlist analysis
 │   │
-│   ├── view/                            # Capa de Vista (interfaz gráfica)
+│   ├── view/                            # View layer (GUI)
 │   │   ├── __init__.py
-│   │   ├── main_window.py              # Ventana principal con historial
-│   │   └── visualizer.py               # Visualizadores Matplotlib
+│   │   ├── main_window.py              # Main window with history
+│   │   └── visualizer.py               # Matplotlib visualizers
 │   │
-│   └── controller/                      # Capa de Controlador (orquestación)
-│       ├── __init__.py
-│       └── main_controller.py           # WorkerObject + QThread + historial
+│   ├── controller/                      # Controller layer (orchestration)
+│   │   ├── __init__.py
+│   │   └── main_controller.py           # WorkerObject + QThread + history
+│   │
+│   └── persist.py                       # History persistence to disk
 │
-├── tests/                               # Tests automatizados
-│   ├── conftest.py                      # Fixtures compartidos
+├── tests/                               # Automated tests
+│   ├── conftest.py                      # Shared fixtures
 │   ├── fixtures/
-│   │   ├── generate_wav.py             # Generador de WAV sintético
-│   │   └── sine_440.wav                # WAV de prueba (440 Hz, 2s)
-│   ├── test_audio_file.py              # Tests de AudioFile (mocked)
-│   ├── test_feature_extractor.py       # Tests de detección de key + pipeline
-│   ├── test_integration.py             # Tests end-to-end con WAV real
-│   └── test_results.py                 # Tests de SingleTrackResult y aggregates
+│   │   ├── generate_wav.py             # Synthetic WAV generator
+│   │   └── sine_440.wav                # Test WAV (440 Hz, 2s)
+│   ├── test_audio_file.py              # AudioFile tests (mocked)
+│   ├── test_feature_extractor.py       # Key detection + pipeline tests
+│   ├── test_integration.py             # End-to-end tests with real WAV
+│   └── test_results.py                 # Result class tests
+│
+├── assets/                              # README images
+│   ├── spectrogram.png
+│   ├── chromagram.png
+│   └── waveform.png
 │
 └── .github/workflows/
     └── ci.yml                           # CI matrix (3.10, 3.11, 3.12)
 ```
 
-## Testing y Calidad
+## Testing & Quality
 
 ```bash
 # Tests
-pytest                     # 22 tests, 0 fallos esperados
+pytest                     # 22 tests, 0 failures expected
 
 # Linter
-ruff check src/ tests/     # 0 errores
+ruff check src/ tests/     # 0 errors
 
-# Formateo
+# Formatting
 ruff format --check src/ tests/
 
 # Type checking
 mypy src/                  # Success: no issues found
 
-# Pre-commit (opcional)
+# Coverage
+pytest --cov=src tests/    # Coverage report
+
+# Pre-commit (optional)
 pre-commit install
 pre-commit run --all-files
 ```
 
-El proyecto corre **CI automatizado** en GitHub Actions para Python 3.10, 3.11 y 3.12 en cada push y PR.
+The project runs **automated CI** on GitHub Actions for Python 3.10, 3.11, and 3.12 on every push and pull request.
 
-## Principios de Ingeniería Implementados
+## Engineering Principles
 
-### Patrón MVC (Model-View-Controller)
-- **Model**: Lógica de negocio y procesamiento DSP
-- **View**: Interfaz gráfica PySide6 con signals
-- **Controller**: Orquestación y comunicación via QThread + signals/slots
+### MVC Pattern (Model-View-Controller)
+- **Model**: Business logic and DSP processing
+- **View**: PySide6 GUI with Qt signals
+- **Controller**: Orchestration via QThread + signals/slots
 
-### Programación Orientada a Objetos
-- **Encapsulamiento**: `AudioFile` protege `_y` y `_sr` con getters
-- **Abstracción**: `FeatureExtractor` oculta la complejidad de librosa
-- **Herencia**: `BaseVisualizer → SpectrogramVisualizer, KeyVisualizer`
-- **Polimorfismo**: `draw_data()` implementado de forma diferente en cada visualizador
+### Object-Oriented Programming
+- **Encapsulation**: `AudioFile` protects `_y` and `_sr` with getters
+- **Abstraction**: `FeatureExtractor` hides librosa complexity
+- **Inheritance**: `BaseVisualizer → SpectrogramVisualizer, KeyVisualizer`
+- **Polymorphism**: `draw_data()` implemented differently per visualizer
 
-### Buenas Prácticas
-- ✅ **Type hints** en toda la codebase (verificados con mypy)
-- ✅ **Google-style docstrings** en todas las clases y métodos públicos
-- ✅ **Logging estructurado** en vez de print()
-- ✅ **QThread** para operaciones async (no bloquea la UI)
-- ✅ **Config centralizada** (src/config/) sin constantes hardcodeadas
-- ✅ **22 tests automatizados** (unitarios + integración)
-- ✅ **CI/CD** con GitHub Actions
+### Best Practices
+- ✅ **Type hints** across the entire codebase (verified by mypy)
+- ✅ **Google-style docstrings** on all public classes and methods
+- ✅ **Structured logging** instead of print()
+- ✅ **QThread** for async operations (non-blocking UI)
+- ✅ **Centralized config** (src/config/) — no hardcoded constants
+- ✅ **22 automated tests** (unit + integration)
+- ✅ **CI/CD** with GitHub Actions
 - ✅ **Pre-commit hooks** (ruff, black, mypy)
-- ✅ **Packaging moderno** (pyproject.toml)
+- ✅ **Modern packaging** (pyproject.toml)
 
-## Algoritmos DSP Utilizados
+## DSP Algorithms
 
-### Detección de Tempo
-Usa `librosa.feature.rhythm.tempo` con análisis de onset y autocorrelación.
+### Tempo Detection
+Uses `librosa.feature.rhythm.tempo` with onset detection and autocorrelation.
 
-### Detección de Tonalidad
-Implementa el **algoritmo Krumhansl-Schmuckler**:
+### Key Detection
+Implements the **Krumhansl-Schmuckler algorithm**:
 
-1. Extrae características cromáticas con STFT
-2. Calcula vector promedio de 12 clases de tonos
-3. Correlaciona con plantillas Mayor/Menor rotadas
-4. Selecciona la clave con mayor correlación
+1. Extract chroma features via STFT
+2. Compute average 12-bin chroma vector
+3. Correlate with rotated major/minor templates
+4. Select the key with the highest correlation score
 
-### Espectrograma de Potencia
-STFT (Short-Time Fourier Transform) convertida a escala de decibelios con `librosa.amplitude_to_db`.
+### Power Spectrogram
+STFT (Short-Time Fourier Transform) converted to decibel scale with `librosa.amplitude_to_db`.
 
 ## Troubleshooting
 
-| Error | Solución |
+| Error | Solution |
 |-------|----------|
 | `ModuleNotFoundError: No module named 'librosa'` | `pip install -r requirements.txt` |
-| `FutureWarning: librosa.beat.tempo` | Inocuo — el código usa try/except para ambas API |
-| Audio no se carga | Verificar formato (MP3, WAV, FLAC) y que `soundfile` esté instalado |
+| `FutureWarning: librosa.beat.tempo` | Harmless — code uses try/except for both APIs |
+| Audio won't load | Check format (MP3, WAV, FLAC) and that `soundfile` is installed |
 
-## Ejemplos de Salida
+## Sample Output
 
 ```
-Archivo: cancion.mp3
+File: cancion.mp3
 BPM: 120.00
-Key: C Mayor
+Key: C Major
 ```
 
-- **Espectrograma**: Distribución de energía en frecuencias a lo largo del tiempo
-- **Cromagrama**: Distribución de las 12 clases de tonos (C, C#, D, ..., B)
+- **Spectrogram**: Energy distribution across frequencies over time
+- **Chromagram**: Distribution of the 12 pitch classes (C, C#, D, ..., B)
 
-## Autor
+## Author
 
-Desarrollado como proyecto educativo para demostrar conceptos de:
+Developed as an educational project demonstrating:
 
-- Programación Orientada a Objetos
-- Arquitectura MVC
-- Procesamiento Digital de Señales
-- Testing automatizado y CI/CD
-- Desarrollo de aplicaciones GUI con Python
+- Object-Oriented Programming
+- MVC Architecture
+- Digital Signal Processing
+- Automated Testing & CI/CD
+- Python GUI Development
 
-## Referencias
+## References
 
 - [librosa](https://librosa.org/doc/latest/index.html)
 - [PySide6](https://doc.qt.io/qtforpython-6/)
