@@ -22,6 +22,8 @@ a = Analysis(
         "librosa",
         "numpy",
         "matplotlib",
+        "PIL",
+        "PIL.Image",
         "scipy.io.wavfile",
         "soundfile",
     ],
@@ -30,7 +32,6 @@ a = Analysis(
     runtime_hooks=[],
     excludes=[
         "tkinter",
-        "PIL",
         "cv2",
         "tensorflow",
         "torch",
