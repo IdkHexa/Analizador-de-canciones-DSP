@@ -22,6 +22,8 @@ a = Analysis(
         "librosa",
         "numpy",
         "matplotlib",
+        "matplotlib.backends.backend_qt5agg",
+        "matplotlib.backends.backend_qt",
         "scipy.io.wavfile",
         "soundfile",
     ] + all_pil,
