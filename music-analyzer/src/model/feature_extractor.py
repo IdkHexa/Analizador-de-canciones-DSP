@@ -104,6 +104,7 @@ class FeatureExtractor:
             "key": key,
             "D": spec_db,
             "chroma": chroma,
+            "y": y,  # raw signal for waveform visualization
             "sr": sr,
             "times": times,
         }

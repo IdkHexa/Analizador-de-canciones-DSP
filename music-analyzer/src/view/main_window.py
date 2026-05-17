@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMainWindow,
+    QProgressBar,
     QPushButton,
     QSizePolicy,
     QVBoxLayout,
@@ -40,7 +41,7 @@ from config import (
     WINDOW_TITLE,
 )
 
-from .visualizer import KeyVisualizer, SpectrogramVisualizer
+from .visualizer import KeyVisualizer, SpectrogramVisualizer, WaveformVisualizer
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +61,13 @@ class MainWindow(QMainWindow):
 
     signal_analyze_request = Signal(str)
     signal_history_item_selected = Signal(int)
+    signal_export_request = Signal(str)
 
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle(WINDOW_TITLE)
         self.setMinimumSize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
+        self.setAcceptDrops(True)
 
         # Cache of the latest feature dict (used for history restore)
         self._last_features: dict[str, Any] | None = None
@@ -123,7 +126,13 @@ class MainWindow(QMainWindow):
         self.summary_output.setStyleSheet(STYLE_SUMMARY_OUTPUT)
         self._set_default_summary()
 
-        # 5. History section
+        # 5. Export button
+        self.export_button = QPushButton("Exportar Resultados...")
+        self.export_button.clicked.connect(self._on_export_clicked)
+        self.export_button.setEnabled(False)
+        self.export_button.setMinimumHeight(30)
+
+        # 6. History section
         history_title = QLabel("--- Historial de Análisis ---")
         history_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         history_title.setFont(font_title)
@@ -132,12 +141,17 @@ class MainWindow(QMainWindow):
         self.history_list.setMaximumHeight(120)
         self.history_list.itemClicked.connect(self._on_history_clicked)
 
-        # 6. Separator
+        # 7. Separator
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        # 7. Status
+        # 8. Progress bar
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+        self.progress_bar.setMaximumHeight(20)
+
+        # 9. Status
         self.status_label = QLabel("Listo para cargar.")
         self.status_label.setStyleSheet(STYLE_STATUS_OK)
 
@@ -149,10 +163,14 @@ class MainWindow(QMainWindow):
         layout.addWidget(summary_title)
         layout.addSpacing(5)
         layout.addWidget(self.summary_output)
+        layout.addSpacing(5)
+        layout.addWidget(self.export_button)
         layout.addSpacing(10)
         layout.addWidget(history_title)
         layout.addSpacing(5)
         layout.addWidget(self.history_list)
+        layout.addSpacing(5)
+        layout.addWidget(self.progress_bar)
         layout.addStretch()
         layout.addWidget(line)
         layout.addWidget(self.status_label)
@@ -162,9 +180,11 @@ class MainWindow(QMainWindow):
         self.graph_container = QWidget()
         self.graph_layout = QVBoxLayout(self.graph_container)
 
+        self.waveform_viz = WaveformVisualizer()
         self.spectrogram_viz = SpectrogramVisualizer()
         self.key_viz = KeyVisualizer()
 
+        self.graph_layout.addWidget(self.waveform_viz)
         self.graph_layout.addWidget(self.spectrogram_viz)
         self.graph_layout.addWidget(self.key_viz)
 
@@ -195,6 +215,27 @@ class MainWindow(QMainWindow):
         """Emit the index of the clicked history entry."""
         row = self.history_list.row(item)
         self.signal_history_item_selected.emit(row)
+
+    def _on_export_clicked(self) -> None:
+        """Emit ``signal_export_request`` so the Controller opens the save dialog."""
+        self.signal_export_request.emit("")
+
+    # ------------------------------------------------------------------
+    # Drag & Drop  (accept audio files)
+    # ------------------------------------------------------------------
+
+    def dragEnterEvent(self, event) -> None:  # noqa: N802 — Qt override
+        """Accept drag events carrying file URLs."""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+    def dropEvent(self, event) -> None:  # noqa: N802 — Qt override
+        """Handle a dropped file: extract path and start analysis."""
+        urls = event.mimeData().urls()
+        if urls:
+            path = urls[0].toLocalFile()
+            if path.lower().endswith((".mp3", ".wav", ".flac")):
+                self.signal_analyze_request.emit(path)
 
     # ------------------------------------------------------------------
     # Slots  (called by the Controller, possibly via signals)
@@ -241,8 +282,10 @@ class MainWindow(QMainWindow):
         in action since every subclass implements it differently.
         """
         self._last_features = features
+        self.waveform_viz.draw_data(features)
         self.spectrogram_viz.draw_data(features)
         self.key_viz.draw_data(features)
+        self.export_button.setEnabled(True)
 
     def update_history_list(self, names: list[str]) -> None:
         """Replace the history :class:`QListWidget` contents with *names*.
@@ -259,3 +302,14 @@ class MainWindow(QMainWindow):
         item = self.history_list.item(index)
         if item:
             self.history_list.setCurrentItem(item)
+
+    def update_progress(self, value: int) -> None:
+        """Update the progress bar during analysis.
+
+        Args:
+            value: Progress percentage (0–100).
+        """
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setValue(value)
+        if value >= 100:
+            self.progress_bar.setVisible(False)

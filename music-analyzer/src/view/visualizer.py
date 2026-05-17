@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
@@ -154,5 +155,34 @@ class KeyVisualizer(BaseVisualizer):
 
         if img:
             self.figure.colorbar(img, ax=self.ax)
+
+        self.canvas.draw()
+
+
+class WaveformVisualizer(BaseVisualizer):
+    """Displays the raw audio waveform (time-domain signal).
+
+    Uses ``librosa.display.waveshow`` for an amplitude-over-time plot.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(title="Forma de Onda", **kwargs)
+
+    def draw_data(self, features: dict[str, Any]) -> None:
+        """Render the waveform from *features['y']*.
+
+        Args:
+            features: Dictionary with keys ``y`` (signal array) and
+                      ``sr`` (sample rate).
+        """
+        self.ax.clear()
+
+        y: Any = features["y"]
+        sr: int = features["sr"]
+
+        librosa.display.waveshow(y, sr=sr, ax=self.ax, color="steelblue")
+        self.ax.set_title(self.title)
+        self.ax.set_xlabel("Tiempo (s)")
+        self.ax.set_ylabel("Amplitud")
 
         self.canvas.draw()

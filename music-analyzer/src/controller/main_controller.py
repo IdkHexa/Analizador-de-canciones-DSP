@@ -6,16 +6,19 @@ user gestures from the View to Model operations and pushes results back.
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 from typing import Any
 
 from PySide6.QtCore import QObject, QThread, Signal, Slot
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
 from config import AUDIO_FILE_PATTERNS
 from model.audio_file import AudioFile
 from model.feature_extractor import FeatureExtractor
 from model.playlist_analyzer import PlaylistAnalyzer, SingleTrackResult
+from persist import load_history, save_entry
 from view.main_window import MainWindow
 
 logger = logging.getLogger(__name__)
@@ -26,12 +29,15 @@ class WorkerObject(QObject):
 
     Signals
     -------
+    progress(value: int):
+        Emitted with 0-100 during analysis for progress bar updates.
     finished(features: dict):
         Emitted when analysis completes successfully.
     error(message: str):
         Emitted when any error occurs during loading or analysis.
     """
 
+    progress = Signal(int)
     finished = Signal(dict)
     error = Signal(str)
 
@@ -45,6 +51,9 @@ class WorkerObject(QObject):
         self._audio = model_audio
         self._extractor = model_extractor
         self._filepath = filepath
+        # Batch context — set externally before starting the thread
+        self._batch_current: int = 1
+        self._batch_total: int = 1
 
     @Slot()
     def run(self) -> None:
@@ -55,17 +64,21 @@ class WorkerObject(QObject):
         """
         logger.info("Worker started for %s", self._filepath)
         try:
+            self.progress.emit(10)
             if not self._audio.load_audio(self._filepath):
                 self.error.emit("ERROR: No se pudo cargar el archivo de audio.")
                 return
 
+            self.progress.emit(50)
             features = self._extractor.extract_all_features(self._audio)
             if features.get("error"):
                 self.error.emit(f"ERROR: {features['error']}")
                 return
 
+            self.progress.emit(90)
             logger.info("Worker finished — emitting results")
             self.finished.emit(features)
+            self.progress.emit(100)
 
         except Exception as exc:
             logger.exception("Worker crashed")
@@ -73,10 +86,10 @@ class WorkerObject(QObject):
 
 
 class MainController(QObject):
-    """Orchestrates Model ↔ View communication.
+    """Orchestrates Model <-> View communication.
 
     Responsible for
-    - Handling UI requests (file dialog → analysis).
+    - Handling UI requests (file dialog -> analysis).
     - Running DSP on a background thread via :class:`WorkerObject`.
     - Maintaining an analysis history (:class:`PlaylistAnalyzer`).
     - Pushing results back to the View thread-safely via Qt signals.
@@ -87,6 +100,7 @@ class MainController(QObject):
     signal_summary_update = Signal(dict)
     signal_graph_update = Signal(dict)
     signal_filepath_update = Signal(str)
+    signal_progress = Signal(int)
     signal_history_update = Signal(list)
     signal_history_restore = Signal(int)
 
@@ -104,6 +118,11 @@ class MainController(QObject):
 
         # Keep track of each result's features keyed by list index
         self._history_features: list[dict[str, Any]] = []
+        # Scalar-only list of previous sessions (persisted)
+        self._persisted_history: list[dict[str, Any]] = []
+        # Batch processing state
+        self._batch_files: list[str] = []
+        self._batch_index: int = 0
 
         self._connect_signals_to_slots()
 
@@ -113,56 +132,95 @@ class MainController(QObject):
 
     def _connect_signals_to_slots(self) -> None:
         """Wire internal and view signals to the appropriate slots."""
-        # View → Controller
+        # View -> Controller
         self.view_window.signal_analyze_request.connect(self.handle_analyze_request)
         self.view_window.signal_history_item_selected.connect(self._restore_from_history)
+        self.view_window.signal_export_request.connect(self._handle_export_request)
 
-        # Controller → View
+        # Controller -> View
         self.signal_status_update.connect(self.view_window.update_status)
         self.signal_summary_update.connect(self.view_window.display_summary)
         self.signal_graph_update.connect(self.view_window.display_analysis)
         self.signal_filepath_update.connect(self.view_window.update_filepath)
+        self.signal_progress.connect(self.view_window.update_progress)
         self.signal_history_update.connect(self.view_window.update_history_list)
         self.signal_history_restore.connect(self.view_window.highlight_history_item)
 
+        # Load persisted history from previous sessions
+        self._load_persisted_history()
+
     # ------------------------------------------------------------------
-    # Entry point: user wants to analyse a file
+    # Entry point: user wants to analyse files
     # ------------------------------------------------------------------
 
     @Slot(str)
     def handle_analyze_request(self, _dummy: str = "") -> None:
         """Open a file dialog and start background analysis.
 
-        The actual file dialog lives in the Controller (not the View)
-        to keep the View free of I/O logic.
+        Supports multiple file selection for batch processing.
+        Files are analysed sequentially.
         """
-        filepath, _ = QFileDialog.getOpenFileName(
+        filepaths, _ = QFileDialog.getOpenFileNames(
             QWidget(self.view_window),
-            "Seleccionar Archivo de Audio",
+            "Seleccionar Archivos de Audio",
             "",
             AUDIO_FILE_PATTERNS,
         )
-        if not filepath:
-            self.signal_status_update.emit("Selección cancelada.", "orange")
+        if not filepaths:
+            self.signal_status_update.emit("Seleccion cancelada.", "orange")
             return
 
-        self.signal_filepath_update.emit(filepath)
-        self.signal_status_update.emit("Cargando y analizando...", "blue")
+        if len(filepaths) == 1:
+            # Single file — normal path
+            fp = filepaths[0]
+            self.signal_filepath_update.emit(fp)
+            self.signal_status_update.emit("Cargando y analizando...", "blue")
+            self._start_worker(fp)
+        else:
+            # Multiple files — batch path
+            self._batch_files = filepaths
+            self._batch_index = 0
+            self._start_next_batch()
 
-        self._start_worker(filepath)
+    def _start_next_batch(self) -> None:
+        """Start the next file in the batch queue."""
+        if self._batch_index >= len(self._batch_files):
+            self.signal_status_update.emit(
+                f"Batch completo: {len(self._batch_files)} archivos analizados.",
+                "green",
+            )
+            return
+
+        fp = self._batch_files[self._batch_index]
+        total = len(self._batch_files)
+        current = self._batch_index + 1
+
+        self.signal_filepath_update.emit(fp)
+        self.signal_status_update.emit(f"Analizando archivo {current}/{total}...", "blue")
+        self._start_worker(fp, batch_current=current, batch_total=total)
 
     # ------------------------------------------------------------------
     # QThread worker management
     # ------------------------------------------------------------------
 
-    def _start_worker(self, filepath: str) -> None:
+    def _start_worker(
+        self,
+        filepath: str,
+        batch_current: int = 1,
+        batch_total: int = 1,
+    ) -> None:
         """Create a :class:`WorkerObject`, move it to a :class:`QThread`,
         and start processing."""
         self._thread = QThread(self)
         self._worker = WorkerObject(self.model_audio, self.model_extractor, filepath)
         self._worker.moveToThread(self._thread)
 
+        # Capture batch context for the finished callback
+        self._worker._batch_current = batch_current
+        self._worker._batch_total = batch_total
+
         # Wire worker signals
+        self._worker.progress.connect(self.signal_progress.emit)
         self._worker.finished.connect(self._on_analysis_finished)
         self._worker.error.connect(self._on_analysis_error)
         self._thread.started.connect(self._worker.run)
@@ -182,18 +240,37 @@ class MainController(QObject):
 
         self.signal_summary_update.emit(result_obj.get_summary())
         self.signal_graph_update.emit(features)
-        self.signal_status_update.emit("Análisis completado exitosamente.", "green")
+        self.signal_status_update.emit("Analisis completado exitosamente.", "green")
+
+        # Persist scalar data to disk
+        save_entry(features)
 
         # Notify the View to refresh the history list
-        history_names = [
-            str(r.get_summary().get("File", f"Track {i}"))
-            for i, r in enumerate(self.model_playlist._results)  # noqa: SLF001
-        ]
+        history_names = self._build_history_names()
         self.signal_history_update.emit(history_names)
 
+        # Continue batch if there are more files
+        if self._batch_index < len(self._batch_files):
+            self._batch_index += 1
+            self._start_next_batch()
+
+    def _build_history_names(self) -> list[str]:
+        """Build a combined list of persisted and session history names."""
+        names: list[str] = []
+        for entry in self._persisted_history:
+            fname = str(entry.get("file", "N/A")).split("/")[-1]
+            names.append(f"{fname} (prev)")
+        for i, r in enumerate(self.model_playlist._results):  # noqa: SLF001
+            names.append(str(r.get_summary().get("File", f"Track {i}")))
+        return names
+
     def _on_analysis_error(self, message: str) -> None:
-        """Handle an error from the worker thread."""
+        """Handle an error from the worker thread.
+
+        Updates the status label AND shows a modal error dialog.
+        """
         self.signal_status_update.emit(message, "red")
+        QMessageBox.critical(self.view_window, "Error de Análisis", message)
 
     # ------------------------------------------------------------------
     # History navigation
@@ -220,3 +297,57 @@ class MainController(QObject):
             "blue",
         )
         self.signal_history_restore.emit(index)
+
+    # ------------------------------------------------------------------
+    # Persisted history
+    # ------------------------------------------------------------------
+
+    def _load_persisted_history(self) -> None:
+        """Load history from disk and populate the view."""
+        self._persisted_history = load_history()
+        if self._persisted_history:
+            names = self._build_history_names()
+            self.signal_history_update.emit(names)
+            logger.info("Loaded %d persisted entries", len(self._persisted_history))
+
+    # ------------------------------------------------------------------
+    # Export
+    # ------------------------------------------------------------------
+
+    @Slot(str)
+    def _handle_export_request(self, _dummy: str = "") -> None:
+        """Open a save dialog and export the current analysis as JSON."""
+        features = self.view_window._last_features  # noqa: SLF001
+        if not features:
+            return
+
+        filepath, _ = QFileDialog.getSaveFileName(
+            self.view_window,
+            "Exportar Resultados",
+            "",
+            "JSON (*.json);;CSV (*.csv)",
+        )
+        if not filepath:
+            return
+
+        export = {
+            "file": str(features.get("path", "")),
+            "bpm": features.get("tempo", 0),
+            "key": features.get("key", ""),
+        }
+
+        if filepath.endswith(".csv"):
+            import csv  # noqa: PLC0415 — import on demand
+
+            with open(filepath, "w", newline="", encoding="utf-8") as f:
+                w = csv.DictWriter(f, fieldnames=list(export))
+                w.writeheader()
+                w.writerow(export)
+        else:
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(export, f, indent=2, ensure_ascii=False)
+
+        logger.info("Exported results to %s", filepath)
+        self.signal_status_update.emit(
+            f"Resultados exportados a {os.path.basename(filepath)}", "green"
+        )
