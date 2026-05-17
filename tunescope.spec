@@ -1,20 +1,20 @@
 # -*- mode: python ; coding: utf-8 -*-
 """PyInstaller spec for TuneScope — Music Analyzer."""
 
-import os
-import sys
-from pathlib import Path
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 BLOCK_CIPHER_LIST = None
+
+all_pil = collect_submodules("PIL")
+pil_data = collect_data_files("PIL", include_py_files=True)
 
 a = Analysis(
     ["main.py"],
     pathex=[],
     binaries=[],
     datas=[
-        # Include the src package recursively
         ("src", "src"),
-    ],
+    ] + pil_data,
     hiddenimports=[
         "PySide6.QtCore",
         "PySide6.QtWidgets",
@@ -22,11 +22,9 @@ a = Analysis(
         "librosa",
         "numpy",
         "matplotlib",
-        "PIL",
-        "PIL.Image",
         "scipy.io.wavfile",
         "soundfile",
-    ],
+    ] + all_pil,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
