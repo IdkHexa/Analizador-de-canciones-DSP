@@ -19,8 +19,8 @@ Aplicación de escritorio para análisis de audio mediante **Procesamiento Digit
 - **Historial de Análisis**: Navegación entre tracks analizados previamente
 - **Exportación de resultados**: Guarda análisis en JSON o CSV
 - **Procesamiento en segundo plano**: La UI nunca se congela gracias a QThread
-- **Drag & Drop**: Arrastrá archivos de audio directamente a la ventana
-- **Análisis por lotes**: Procesá múltiples archivos en secuencia
+- **Drag & Drop**: Arrastra archivos de audio directamente a la ventana
+- **Análisis por lotes**: Procesa múltiples archivos en secuencia
 - **Interfaz Gráfica Moderna**: Construida con PySide6 (Qt for Python)
 - **Arquitectura MVC**: Modelo-Vista-Controlador con signals/slots
 
@@ -41,7 +41,7 @@ Cada análisis produce tres visualizaciones interactivas (con zoom y pan):
 ### Flujo de uso
 
 ```
-1. Clic en "Cargar y Analizar Audio..." (o arrastrá un archivo)
+1. Clic en "Cargar y Analizar Audio..." (o arrastra un archivo)
        │
        ▼
 2. Barra de progreso muestra el avance del análisis
@@ -53,7 +53,7 @@ Cada análisis produce tres visualizaciones interactivas (con zoom y pan):
 4. Visualizaciones: Waveform → Espectrograma → Cromagrama
        │
        ▼
-5. Exportá a JSON/CSV o navegá el historial
+5. Exporta a JSON/CSV o navega el historial
 ```
 
 ## Tecnologías
@@ -117,7 +117,7 @@ python main.py
 
 Pasos para analizar audio:
 
-1. Clic en **"Cargar y Analizar Audio..."** (o arrastrá un archivo a la ventana)
+1. Clic en **"Cargar y Analizar Audio..."** (o arrastra un archivo a la ventana)
 2. Seleccioná un archivo de audio (MP3, WAV, FLAC)
 3. Esperá a que se complete el análisis
 4. Visualizá los resultados:
