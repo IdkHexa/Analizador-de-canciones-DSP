@@ -34,7 +34,7 @@ class BaseVisualizer(QWidget):
         super().__init__(**kwargs)
         self.title = title
 
-        self.figure, self.ax = plt.subplots(1, 1, figsize=(4, 3))
+        self.figure, self.ax = plt.subplots(1, 1, figsize=(5.5, 3.5))
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavigationToolbar(self.canvas, self)
 

@@ -31,8 +31,8 @@ CHROMA_NAMES: Final[list[str]] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#
 # ---------------------------------------------------------------------------
 
 WINDOW_TITLE: Final[str] = "Analizador de Canciones DSP (PySide6 MVC)"
-WINDOW_MIN_WIDTH: Final[int] = 1000
-WINDOW_MIN_HEIGHT: Final[int] = 650
+WINDOW_MIN_WIDTH: Final[int] = 1200
+WINDOW_MIN_HEIGHT: Final[int] = 780
 CONTROL_PANEL_WIDTH: Final[int] = 350
 
 # ---------------------------------------------------------------------------
